@@ -84,6 +84,13 @@
     .reveal-btn { width: 100%; margin-bottom: 12px; }
   .solution { padding: 12px 14px; background: #eef1fb; border-left: 3px solid var(--brand);
     border-radius: 10px; font-size: 14px; color: var(--ink); line-height: 1.5; white-space: pre-line; }
+    .barem { margin-top: 14px; padding: 14px; background: #f3f5fb; border: 1px solid var(--line); border-radius: 12px; }
+  .barem-title { margin: 0 0 10px; font-size: 13px; font-weight: 600; color: var(--muted); }
+  .barem-row { display: flex; align-items: center; gap: 10px; padding: 6px 0; font-size: 14px; color: var(--ink); cursor: pointer; }
+  .barem-row input[type="checkbox"] { width: 18px; height: 18px; flex: none; padding: 0; border: none; }
+  .barem-text { flex: 1; }
+  .barem-pts { color: var(--muted); font-size: 13px; white-space: nowrap; }
+  .barem-score { margin: 10px 0 0; font-size: 14px; font-weight: 600; color: var(--brand); }
 </style>
 </head>
 <body>
@@ -99,6 +106,7 @@
 
       <p class="feedback" id="feedback"></p>
       <div class="hint" id="hint" hidden></div>
+      <div class="barem" id="barem" hidden></div>
       <p class="score" id="score">Баллов: 0</p>
 
       <div class="nav">
@@ -142,9 +150,16 @@
         hint: "Парабола пересекает Ox в двух точках, когда дискриминант > 0. Для x² − 4x + c: 16 − 4c > 0, то есть c < 4. Подойдёт любое число меньше 4." },
     ] },
     { position: 4, topic: "Текстовая задача: работа", maxPoints: 5, variants: [
-      { type: "single", text: "Трактористу нужно вспахать 116 га. За 6 дней он вспахал 87 га. За сколько дней он вспашет остаток?",
-        correct: 2, placeholder: "дней",
-        hint: "Осталось 116 − 87 = 29 га. Скорость: 87 га за 6 дней. Дни = 29 · 6 / 87." } ,
+      { type: "single",
+        text: "Трактористу нужно вспахать 116 га. За 6 дней он вспахал 87 га. За сколько дней он вспашет остаток?",
+        correct: 2,
+        hint: "Осталось 116 − 87 = 29 га. Скорость: 87 га за 6 дней. Дни = 29 · 6 / 87.",
+        barem: [
+          { text: "Записал «87 га — 6 дней»",             points: 1 },
+          { text: "Нашёл остаток 29 га и завершил схему",  points: 2 },
+          { text: "Записал x = 29 · 6 / 87",              points: 1 },
+          { text: "Получил верный ответ x = 2",            points: 1, auto: true },
+        ] },
     ] },
     { position: 5, topic: "Степени: вычисление", maxPoints: 5, variants: [
       { type: "single", text: "Вычисли: (1/3)^(−25) · 9^(−12) + (1/3)^0",
@@ -212,6 +227,8 @@ let current = 0;
   // Балл мы НЕ копим вручную, а вычисляем из этого массива — накрутить нельзя.
   let results = new Array(questions.length).fill(null);
   let inputEls = [];   // поля ответа текущего вопроса (одно или несколько)
+  let baremState = {};   // запоминаем отмеченные этапы по каждому вопросу
+
 
   const questionEl = document.getElementById("question");
   const answerArea = document.getElementById("answerArea");
@@ -229,6 +246,7 @@ let current = 0;
   const eyebrowEl = document.getElementById("eyebrow");
   const checkBtn  = document.getElementById("checkBtn");
   const qImageEl = document.getElementById("qImage");
+  const baremEl = document.getElementById("barem");
 
   // ---- НОВОЕ: render() "рисует" на экране ТЕКУЩИЙ вопрос.
   // Раньше текст ставился один раз. Теперь у нас несколько вопросов,
@@ -240,6 +258,8 @@ let current = 0;
     progressEl.textContent = "Вопрос " + (current + 1) + " из " + questions.length;
     show("", "");
     hideHint();
+    baremEl.hidden = true;      // самопроверку по барему прячем при переходе
+    baremEl.innerHTML = "";
 
     if (q.image) {
       qImageEl.src = q.image;
@@ -286,9 +306,8 @@ let current = 0;
   // ---- 2. ЛОГИКА: проверка ответа текущего вопроса
   function checkAnswer() {
     const q = questions[current];
-    if (q.type === "todo" || q.type === "proof") return;     // в заглушке проверять нечего
+    if (q.type === "todo" || q.type === "proof") return;
 
-    // --- Одно числовое поле: обычный ответ (single) ИЛИ диапазон (range) ---
     if (q.type === "single" || q.type === "range") {
       const raw = inputEls[0].value.trim();
       if (raw === "") { show("Введи ответ 🙂", ""); return; }
@@ -299,12 +318,15 @@ let current = 0;
         return;
       }
 
-      // Отличается ТОЛЬКО правило верности:
       const ok = (q.type === "range") ? inRange(val, q) : sameNumber(val, q.correct);
-
-      results[current] = ok ? 1 : 0;
       show(ok ? "Верно! 🎉" : "Пока неверно. Попробуй ещё раз.", ok ? "ok" : "bad");
       if (ok) hideHint(); else showHint(q.hint);
+
+      if (q.barem) {
+        showBarem(q, ok);                 // балл посчитает самопроверка по барему
+      } else {
+        results[current] = ok ? 1 : 0;    // обычный режим
+      }
 
     } else if (q.type === "multi") {
       let filledCount = 0;
@@ -334,7 +356,8 @@ let current = 0;
 
   // Сколько баллов "стоит" вопрос: одиночный = 1, многорамочный = число рамок.
   function maxPointsOf(q) {
-    if (q.type === "todo" || q.type === "proof") return 0;     // заглушки в балл не считаем
+    if (q.barem) return q.barem.reduce((s, st) => s + st.points, 0);
+    if (q.type === "todo" || q.type === "proof") return 0;
     if (q.type === "multi") return q.parts.length;
     return 1;
   }
@@ -344,6 +367,35 @@ let current = 0;
     const earned = results.reduce((sum, r) => sum + (r || 0), 0);
     const total  = questions.reduce((sum, q) => sum + maxPointsOf(q), 0);
     scoreEl.textContent = "Баллов: " + earned + " из " + total;
+  }
+
+  function showBarem(q, finalOk) {
+    if (!baremState[current]) {                          // первая инициализация галочек
+      baremState[current] = q.barem.map(st => !!(st.auto && finalOk));
+    }
+    baremEl.innerHTML =
+      `<p class="barem-title">Самопроверка по барему — отметь, что сделал:</p>` +
+      q.barem.map((st, i) =>
+        `<label class="barem-row">
+           <input type="checkbox" class="barem-cb" data-i="${i}" data-points="${st.points}" ${baremState[current][i] ? "checked" : ""}>
+           <span class="barem-text">${st.text}</span>
+           <span class="barem-pts">${st.points} б</span>
+         </label>`).join("") +
+      `<p class="barem-score" id="baremScore"></p>`;
+    baremEl.hidden = false;
+    applyBarem(q);
+  }
+
+  function applyBarem(q) {
+    let earned = 0;
+    baremEl.querySelectorAll(".barem-cb").forEach(cb => {
+      const i = Number(cb.dataset.i);
+      baremState[current][i] = cb.checked;
+      if (cb.checked) earned += Number(cb.dataset.points);
+    });
+    results[current] = earned;
+    document.getElementById("baremScore").textContent = "За задачу: " + earned + " из " + maxPointsOf(q) + " б";
+    updateScore();
   }
 
   // Превращает введённый текст в число. Понимает дроби "a/b", запятую и обычные числа.
@@ -403,6 +455,7 @@ let current = 0;
   function restart() {
     questions = buildRandomTest();   // новый случайный вариант теста
     results = new Array(questions.length).fill(null);
+    baremState = {};
     current = 0;
     resultView.hidden = true;
     quizView.hidden = false;
@@ -440,6 +493,9 @@ let current = 0;
   prevBtn.addEventListener("click", goPrev);
   finishBtn.addEventListener("click", showResult);
   restartBtn.addEventListener("click", restart);
+  baremEl.addEventListener("change", (e) => {
+    if (e.target.classList.contains("barem-cb")) applyBarem(questions[current]);
+  });
 
   updateScore();
   render();   // первый показ при загрузке страницы
