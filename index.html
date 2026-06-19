@@ -147,7 +147,8 @@
       { type: "range",
         text: "f(x) = x² − 4x + c.  Впиши такое c, чтобы парабола пересекала ось Ox в двух точках.",
         max: 4,
-        hint: "Парабола пересекает Ox в двух точках, когда дискриминант > 0. Для x² − 4x + c: 16 − 4c > 0, то есть c < 4. Подойдёт любое число меньше 4." },
+        hint: "Дискриминант > 0: 16 − 4c > 0, то есть c < 4. Подойдёт любое число меньше 4.",
+        barem: [ { text: "Вписал верное число (любое меньше 4)", points: 2, auto: true } ] },
     ] },
     { position: 4, topic: "Текстовая задача: работа", maxPoints: 5, variants: [
       { type: "single",
@@ -155,42 +156,65 @@
         correct: 2,
         hint: "Осталось 116 − 87 = 29 га. Скорость: 87 га за 6 дней. Дни = 29 · 6 / 87.",
         barem: [
-          { text: "Записал «87 га — 6 дней»",             points: 1 },
-          { text: "Нашёл остаток 29 га и завершил схему",  points: 2 },
-          { text: "Записал x = 29 · 6 / 87",              points: 1 },
-          { text: "Получил верный ответ x = 2",            points: 1, auto: true },
-        ] },
+          { text: "Записал «87 га — 6 дней»", points: 1 },
+          { text: "Нашёл остаток 29 га и завершил схему", points: 2 },
+          { text: "Записал x = 29 · 6 / 87", points: 1 },
+          { text: "Получил верный ответ x = 2", points: 1, auto: true } ] },
     ] },
     { position: 5, topic: "Степени: вычисление", maxPoints: 5, variants: [
-      { type: "single", text: "Вычисли: (1/3)^(−25) · 9^(−12) + (1/3)^0",
+      { type: "single",
+        text: "Вычисли: (1/3)^(−25) · 9^(−12) + (1/3)^0",
         correct: 4,
-        hint: "(1/3)^(−25) = 3^25, а 9^(−12) = 3^(−24). Перемножь степени тройки, потом прибавь (1/3)^0 = 1." },
+        hint: "(1/3)^(−25) = 3^25, а 9^(−12) = 3^(−24). Перемножь степени тройки, потом прибавь (1/3)^0 = 1.",
+        barem: [
+          { text: "(1/3)^(−25) = 3^25", points: 1 },
+          { text: "9^(−12) = 3^(−24)", points: 1 },
+          { text: "3^25 · 3^(−24) = 3", points: 1 },
+          { text: "(1/3)^0 = 1", points: 1 },
+          { text: "Выполнил действия, получил 4", points: 1, auto: true } ] },
     ] },
     { position: 6, topic: "Уравнение: обратное число", maxPoints: 4, variants: [
-      { type: "single", text: "Найди обратное число к ненулевому решению уравнения 4x² − 3x = 0.",
-        correct: 4/3, placeholder: "напр. 4/3",
-        hint: "x(4x − 3) = 0 → корни 0 и 3/4. Ненулевой — 3/4, обратное к нему — 4/3." },
+      { type: "single",
+        text: "Найди обратное число к ненулевому решению уравнения 4x² − 3x = 0.",
+        correct: 4/3,
+        hint: "x(4x − 3) = 0 → корни 0 и 3/4. Ненулевой — 3/4, обратное к нему — 4/3.",
+        barem: [
+          { text: "Решил уравнение 4x² − 3x = 0 (корни 0 и 3/4)", points: 3 },
+          { text: "Записал верный ответ 4/3", points: 1, auto: true } ] },
     ] },
     { position: 7, topic: "Геометрия: окружность", maxPoints: 5, variants: [
       { type: "single",
         text: "Длина окружности 26π см. На расстоянии 5 см от центра проведена хорда. Найди длину хорды (в см).",
         image: "images/task7-cyrcle.png",
-        hint: "Длина окружности 2πr = 26π → r = 13. Радиус, расстояние 5 и половина хорды образуют прямоугольный треугольник: половина = √(13² − 5²). Хорда вдвое больше." },
+        hint: "2πr = 26π → r = 13. Радиус, расстояние 5 и половина хорды — прямоугольный треугольник: половина = √(13² − 5²). Хорда вдвое больше.",
+        barem: [
+          { text: "Нашёл радиус (r = 13)", points: 2 },
+          { text: "Нашёл половину хорды (= 12)", points: 2 },
+          { text: "Нашёл длину хорды (= 24)", points: 1, auto: true } ] },
     ] },
     { position: 8, topic: "Текстовая задача: система", maxPoints: 5, variants: [
-      { type: "multi", text: "Илинка и Богдан собрали вместе 68 грибов. Чтобы стало поровну, Богдан отдал Илинке 6 грибов. Сколько собрал каждый?",
+      { type: "multi",
+        text: "Илинка и Богдан собрали вместе 68 грибов. Чтобы стало поровну, Богдан отдал Илинке 6 грибов. Сколько собрал каждый?",
         hint: "После передачи поровну — по 34. Значит Богдан имел 34 + 6, Илинка 34 − 6.",
-        parts: [ { label: "Богдан =", correct: 40 }, { label: "Илинка =", correct: 28 } ] },
+        parts: [ { label: "Богдан =", correct: 40 }, { label: "Илинка =", correct: 28 } ],
+        barem: [
+          { text: "Составил систему из двух уравнений", points: 2 },
+          { text: "Решил систему (нашёл оба неизвестных)", points: 2 },
+          { text: "Записал верный ответ (40 и 28)", points: 1, auto: true } ] },
     ] },
     { position: 9, topic: "Функция: область определения", maxPoints: 5, variants: [
       { type: "todo", text: "f(x) = √(3 − 2x). Найди x из области определения, при которых 2x > x.",
-        note: "Ответ — интервал x ∈ (0; 3/2]. Нужен формат проверки интервалов." },
+        note: "Ответ — интервал x ∈ (0; 3/2]. Барем добавим следующим шагом (формат без авто-ответа)." },
     ] },
     { position: 10, topic: "Стереометрия: призма", maxPoints: 4, variants: [
       { type: "single",
         text: "Основание прямой призмы — прямоугольный треугольник с катетами 3 и 4 см. Площадь боковой поверхности 24 см². Найди высоту призмы (в см).",
         image: "images/task10-prism.png",
-        hint: "Гипотенуза основания: √(3² + 4²) = 5. Периметр P = 3 + 4 + 5. Боковая поверхность = P · h, отсюда h = 24 / P." },
+        hint: "Гипотенуза основания: √(3² + 4²) = 5. Периметр P = 3 + 4 + 5. Боковая поверхность = P · h, отсюда h = 24 / P.",
+        barem: [
+          { text: "Нашёл гипотенузу основания (= 5)", points: 1 },
+          { text: "Получил уравнение 24 = 12 · h", points: 2 },
+          { text: "Нашёл высоту (= 2)", points: 1, auto: true } ] },
     ] },
     { position: 11, topic: "Алгебраические дроби", maxPoints: 6, variants: [
       { type: "proof",
@@ -202,9 +226,15 @@
           "Для натурального X (X ≥ 1): −(X + 2) ≤ −3 — целое отрицательное число." },
     ] },
     { position: 12, topic: "Функция: линейная модель", maxPoints: 4, variants: [
-      { type: "single", text: "Капитал компании задан f(x) = m·x + 3 (x ≥ 0 — годы). За 2 года он вырос до 7 млн. За сколько лет вырастет до 21 млн?",
-        correct: 9, placeholder: "лет",
-        hint: "Из f(2) = 7: 2m + 3 = 7 → m = 2. Значит f(x) = 2x + 3. Реши 2x + 3 = 21." },
+      { type: "single",
+        text: "Капитал компании задан f(x) = m·x + 3 (x ≥ 0 — годы). За 2 года он вырос до 7 млн. За сколько лет вырастет до 21 млн?",
+        correct: 9,
+        hint: "Из f(2) = 7: 2m + 3 = 7 → m = 2. Значит f(x) = 2x + 3. Реши 2x + 3 = 21.",
+        barem: [
+          { text: "Составил уравнение 2m + 3 = 7", points: 1 },
+          { text: "Нашёл m = 2", points: 1 },
+          { text: "Составил уравнение 2x + 3 = 21", points: 1 },
+          { text: "Решил его: x = 9", points: 1, auto: true } ] },
     ] },
   ];
 
@@ -311,44 +341,34 @@ let current = 0;
     if (q.type === "single" || q.type === "range") {
       const raw = inputEls[0].value.trim();
       if (raw === "") { show("Введи ответ 🙂", ""); return; }
-
       const val = parseAnswer(raw);
       if (val === null || Number.isNaN(val)) {
         show("Введи только число (можно дробь, напр. 1/2) — без слов и единиц.", "bad");
         return;
       }
-
       const ok = (q.type === "range") ? inRange(val, q) : sameNumber(val, q.correct);
       show(ok ? "Верно! 🎉" : "Пока неверно. Попробуй ещё раз.", ok ? "ok" : "bad");
       if (ok) hideHint(); else showHint(q.hint);
-
-      if (q.barem) {
-        showBarem(q, ok);                 // балл посчитает самопроверка по барему
-      } else {
-        results[current] = ok ? 1 : 0;    // обычный режим
-      }
+      if (q.barem) showBarem(q, ok);
+      else results[current] = ok ? 1 : 0;
 
     } else if (q.type === "multi") {
-      let filledCount = 0;
-      let correctCount = 0;
+      let filledCount = 0, correctCount = 0;
       q.parts.forEach((part, i) => {
         const input = inputEls[i];
         input.classList.remove("ok-box", "bad-box");
         const raw = input.value.trim();
         if (raw === "") return;
         filledCount++;
-        if (sameNumber(parseAnswer(raw), part.correct)) {
-          correctCount++;
-          input.classList.add("ok-box");
-        } else {
-          input.classList.add("bad-box");
-        }
+        if (sameNumber(parseAnswer(raw), part.correct)) { correctCount++; input.classList.add("ok-box"); }
+        else input.classList.add("bad-box");
       });
       if (filledCount === 0) { show("Введи хотя бы один ответ 🙂", ""); return; }
-      results[current] = correctCount;
       const total = q.parts.length;
       if (correctCount === total) { show("Верно! 🎉", "ok"); hideHint(); }
       else { show("Верно: " + correctCount + " из " + total + ". Попробуй остальные.", "bad"); showHint(q.hint); }
+      if (q.barem) showBarem(q, correctCount === total);
+      else results[current] = correctCount;
     }
 
     updateScore();
