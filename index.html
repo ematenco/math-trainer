@@ -126,6 +126,8 @@
     <div id="resultView" hidden>
       <p class="eyebrow">Результат</p>
       <h1 class="question" id="resultText"></h1>
+      <p class="score" id="resultScore"></p>
+      <p class="feedback" id="resultPass"></p>
       <button id="restartBtn">Пройти заново</button>
     </div>
   </main>
@@ -295,6 +297,8 @@ let current = 0;
   const checkBtn  = document.getElementById("checkBtn");
   const qImageEl = document.getElementById("qImage");
   const baremEl = document.getElementById("barem");
+  const resultScore = document.getElementById("resultScore");
+  const resultPass  = document.getElementById("resultPass");
 
   // ---- НОВОЕ: render() "рисует" на экране ТЕКУЩИЙ вопрос.
   // Раньше текст ставился один раз. Теперь у нас несколько вопросов,
@@ -402,6 +406,20 @@ let current = 0;
     return 1;
   }
 
+  // Перевод процента от максимума в оценку (молдавская шкала 1–10).
+  function gradeForPercent(p) {
+    if (p >= 96) return 10;
+    if (p >= 86) return 9;
+    if (p >= 76) return 8;
+    if (p >= 61) return 7;
+    if (p >= 46) return 6;
+    if (p >= 25) return 5;   // 5 — минимальная проходная
+    if (p >= 17) return 4;
+    if (p >= 9)  return 3;
+    if (p >= 1)  return 2;
+    return 1;
+  }
+
   function updateScore() {
     // Балл = сумма заработанного. results[i] — число баллов или null.
     const earned = results.reduce((sum, r) => sum + (r || 0), 0);
@@ -489,7 +507,20 @@ let current = 0;
   function showResult() {
     const earned = results.reduce((sum, r) => sum + (r || 0), 0);
     const total  = questions.reduce((sum, q) => sum + maxPointsOf(q), 0);
-    resultText.textContent = "Ты набрала " + earned + " из " + total + " баллов";
+    const percent = total > 0 ? (earned / total) * 100 : 0;
+    const grade = gradeForPercent(percent);
+
+    resultText.textContent  = "Примерная оценка: " + grade;
+    resultScore.textContent = earned + " из " + total + " баллов (" + Math.round(percent) + "%)";
+
+    if (grade >= 5) {
+      resultPass.textContent = "Проходной балл достигнут 👍";
+      resultPass.className = "feedback ok";
+    } else {
+      resultPass.textContent = "Ниже проходного — для сдачи нужна оценка 5 (от 25%).";
+      resultPass.className = "feedback bad";
+    }
+
     quizView.hidden = true;
     resultView.hidden = false;
   }
