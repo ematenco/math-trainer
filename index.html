@@ -334,7 +334,6 @@ let current = 0;
         : "";
       checkBtn.hidden = true;
       inputEls = [];
-      if (q.barem) showBarem(q, false);   // чек-лист сразу — ученик решает на бумаге и отмечает этапы
     } else {
       checkBtn.hidden = false;
       if (q.type === "single" || q.type === "range") {
@@ -537,11 +536,13 @@ let current = 0;
   });
   answerArea.addEventListener("click", (e) => {
     if (e.target.id === "revealBtn") {
+      const q = questions[current];
       const box = document.getElementById("solutionBox");
-      box.innerHTML = questions[current].solution || "";
+      box.innerHTML = q.solution || "";
       renderMath(box);
       box.hidden = false;
       e.target.hidden = true;
+      if (q.barem) showBarem(q, false);   // и самопроверку по барему — тоже по кнопке
     }
   });
   nextBtn.addEventListener("click", goNext);
