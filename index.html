@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Тренажёр по математике — 9 класс</title>
+<style>
+  :root {
+    --bg: #f3f5fb;
+    --card: #ffffff;
+    --ink: #1f2440;
+    --muted: #6b7192;
+    --brand: #4f5bd5;
+    --ok: #1f9d6b;
+    --bad: #d2495b;
+    --line: #e3e7f4;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; min-height: 100vh;
+    display: grid; place-items: center;
+    background: var(--bg);
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    color: var(--ink);
+    padding: 24px;
+  }
+  .card {
+    background: var(--card);
+    width: 100%; max-width: 420px;
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    padding: 28px;
+    box-shadow: 0 10px 40px rgba(31, 36, 64, .08);
+  }
+  .eyebrow { font-size: 13px; color: var(--muted); letter-spacing: .04em; text-transform: uppercase; margin: 0 0 6px; }
+  .question { font-size: 22px; font-weight: 650; margin: 0 0 20px; line-height: 1.35; }
+  .row { display: flex; gap: 10px; }
+  input {
+    flex: 1; font-size: 18px; padding: 12px 14px;
+    border: 1.5px solid var(--line); border-radius: 12px; outline: none; color: var(--ink);
+  }
+  input:focus { border-color: var(--brand); }
+  button {
+    font-size: 16px; font-weight: 600; padding: 12px 18px;
+    border: none; border-radius: 12px; cursor: pointer;
+    background: var(--brand); color: #fff;
+  }
+  button:hover { filter: brightness(1.05); }
+  .feedback { margin: 18px 0 0; font-size: 16px; font-weight: 600; min-height: 22px; }
+  .feedback.ok { color: var(--ok); }
+  .feedback.bad { color: var(--bad); }
+  .score { margin-top: 14px; font-size: 14px; color: var(--muted); }
+  .nav { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 18px; }
+  .nav button { background: var(--card); color: var(--brand); border: 1.5px solid var(--line); }
+  .nav button:disabled { opacity: .4; cursor: not-allowed; }
+  #progress { font-size: 13px; color: var(--muted); }
+  .finish { width: 100%; margin-top: 16px; }
+  #restartBtn { width: 100%; margin-top: 18px; }
+  #answerArea { margin-bottom: 12px; }
+  #answerArea > input { width: 100%; }          /* одиночное поле — на всю ширину */
+  .box-row { display: flex; align-items: center; gap: 10px; }
+  .box-row + .box-row { margin-top: 10px; }      /* отступ между рамками */
+  .box-label { min-width: 64px; font-size: 18px; }
+  #checkBtn { width: 100%; }
+  .box-row input.ok-box  { border-color: var(--ok); }
+  .box-row input.bad-box { border-color: var(--bad); }
+  .hint {
+    margin-top: 14px;
+    padding: 12px 14px;
+    background: #eef1fb;
+    border-left: 3px solid var(--brand);
+    border-radius: 10px;
+    font-size: 14px;
+    color: var(--ink);
+    line-height: 1.45;
+  }
+  .badge-todo { display: inline-block; font-size: 12px; font-weight: 600;
+    color: #9a6b00; background: #fff1cc; padding: 3px 8px; border-radius: 999px; }
+  .todo-note { margin: 8px 0 0; padding: 12px 14px; background: #fff7e6;
+    border-left: 3px solid #e6a700; border-radius: 10px; font-size: 14px;
+    color: var(--ink); line-height: 1.45; }
+    .q-image { display: block; max-width: 100%; margin: 0 0 16px; border-radius: 10px; }
+    .q-image[hidden] { display: none; }
+</style>
+</head>
+<body>
+<main class="card">
+    <!-- ВИД 1: сам тренажёр -->
+    <div id="quizView">
+      <p class="eyebrow" id="eyebrow"></p>
+      <h1 class="question" id="question"></h1>
+      <img class="q-image" id="qImage" alt="" hidden>
+
+      <div id="answerArea"></div>
+      <button id="checkBtn">Проверить</button>
+
+      <p class="feedback" id="feedback"></p>
+      <div class="hint" id="hint" hidden></div>
+      <p class="score" id="score">Баллов: 0</p>
+
+      <div class="nav">
+        <button id="prevBtn">← Назад</button>
+        <span id="progress"></span>
+        <button id="nextBtn">Дальше →</button>
+      </div>
+
+      <button id="finishBtn" class="finish">Завершить тест</button>
+    </div>
+
+    <!-- ВИД 2: экран результата (скрыт, пока тест не завершён) -->
+    <div id="resultView" hidden>
+      <p class="eyebrow">Результат</p>
+      <h1 class="question" id="resultText"></h1>
+      <button id="restartBtn">Пройти заново</button>
+    </div>
+  </main>
+
+<script>
+  // ---- 1. ДАННЫЕ: теперь это СПИСОК вопросов (массив), а не один объект.
+  // Каждый элемент — той же формы, что раньше был quiz: { text, correct }.
+   // ---- 1. ДАННЫЕ: слот = позиция в тесте (своя тема). Внутри слота — пул вариантов.
+  const slots = [
+    { position: 1, topic: "Арифметика и степени", maxPoints: 3, variants: [
+      { type: "multi", text: "Пусть a = 0,25 · 8 и b = 7 − 11. Впиши целые числа:",
+        hint: "0,25 = 1/4, значит a = (1/4)·8. b = 7 − 11. b/a — это b разделить на a.",
+        parts: [ { label: "a =", correct: 2 }, { label: "b =", correct: -4 }, { label: "b/a =", correct: -2 } ] },
+    ] },
+    { position: 2, topic: "Геометрия: параллелограмм", maxPoints: 2, variants: [
+      { type: "multi",
+        text: "DK — биссектриса угла ADC параллелограмма ABCD, ∠DAB = 140°. Найди величины углов.",
+        image: "images/task2-parallelogram.png",
+        hint: "Соседние углы параллелограмма дают 180°: ∠ADC = 180° − 140°. DK делит ∠ADC пополам. В треугольнике AKD сумма углов = 180°.",
+        parts: [ { label: "∠ADC =", correct: 40 }, { label: "∠AKD =", correct: 20 } ] },
+    ] },
+    { position: 3, topic: "Функции: парабола", maxPoints: 2, variants: [
+      { type: "range",
+        text: "f(x) = x² − 4x + c.  Впиши такое c, чтобы парабола пересекала ось Ox в двух точках.",
+        max: 4,
+        hint: "Парабола пересекает Ox в двух точках, когда дискриминант > 0. Для x² − 4x + c: 16 − 4c > 0, то есть c < 4. Подойдёт любое число меньше 4." },
+    ] },
+    { position: 4, topic: "Текстовая задача: работа", maxPoints: 5, variants: [
+      { type: "single", text: "Трактористу нужно вспахать 116 га. За 6 дней он вспахал 87 га. За сколько дней он вспашет остаток?",
+        correct: 2, placeholder: "дней",
+        hint: "Осталось 116 − 87 = 29 га. Скорость: 87 га за 6 дней. Дни = 29 · 6 / 87." } ,
+    ] },
+    { position: 5, topic: "Степени: вычисление", maxPoints: 5, variants: [
+      { type: "single", text: "Вычисли: (1/3)^(−25) · 9^(−12) + (1/3)^0",
+        correct: 4,
+        hint: "(1/3)^(−25) = 3^25, а 9^(−12) = 3^(−24). Перемножь степени тройки, потом прибавь (1/3)^0 = 1." },
+    ] },
+    { position: 6, topic: "Уравнение: обратное число", maxPoints: 4, variants: [
+      { type: "single", text: "Найди обратное число к ненулевому решению уравнения 4x² − 3x = 0.",
+        correct: 4/3, placeholder: "напр. 4/3",
+        hint: "x(4x − 3) = 0 → корни 0 и 3/4. Ненулевой — 3/4, обратное к нему — 4/3." },
+    ] },
+    { position: 7, topic: "Геометрия: окружность", maxPoints: 5, variants: [
+      { type: "single",
+        text: "Длина окружности 26π см. На расстоянии 5 см от центра проведена хорда. Найди длину хорды (в см).",
+        image: "images/task7-cyrcle.png",
+        hint: "Длина окружности 2πr = 26π → r = 13. Радиус, расстояние 5 и половина хорды образуют прямоугольный треугольник: половина = √(13² − 5²). Хорда вдвое больше." },
+    ] },
+    { position: 8, topic: "Текстовая задача: система", maxPoints: 5, variants: [
+      { type: "multi", text: "Илинка и Богдан собрали вместе 68 грибов. Чтобы стало поровну, Богдан отдал Илинке 6 грибов. Сколько собрал каждый?",
+        hint: "После передачи поровну — по 34. Значит Богдан имел 34 + 6, Илинка 34 − 6.",
+        parts: [ { label: "Богдан =", correct: 40 }, { label: "Илинка =", correct: 28 } ] },
+    ] },
+    { position: 9, topic: "Функция: область определения", maxPoints: 5, variants: [
+      { type: "todo", text: "f(x) = √(3 − 2x). Найди x из области определения, при которых 2x > x.",
+        note: "Ответ — интервал x ∈ (0; 3/2]. Нужен формат проверки интервалов." },
+    ] },
+    { position: 10, topic: "Стереометрия: призма", maxPoints: 4, variants: [
+      { type: "single",
+        text: "Основание прямой призмы — прямоугольный треугольник с катетами 3 и 4 см. Площадь боковой поверхности 24 см². Найди высоту призмы (в см).",
+        image: "images/task10-prism.png",
+        hint: "Гипотенуза основания: √(3² + 4²) = 5. Периметр P = 3 + 4 + 5. Боковая поверхность = P · h, отсюда h = 24 / P." },
+    ] },
+    { position: 11, topic: "Алгебраические дроби", maxPoints: 6, variants: [
+      { type: "todo", text: "Покажи, что для любого натурального X выражение E(X) = (2X³ + 3X² − 2X) / ((2X+1)(1−X) − 1) — целое отрицательное число.",
+        note: "Это доказательство — нет одного числового ответа. Сделаем формат с эталонным решением." },
+    ] },
+    { position: 12, topic: "Функция: линейная модель", maxPoints: 4, variants: [
+      { type: "single", text: "Капитал компании задан f(x) = m·x + 3 (x ≥ 0 — годы). За 2 года он вырос до 7 млн. За сколько лет вырастет до 21 млн?",
+        correct: 9, placeholder: "лет",
+        hint: "Из f(2) = 7: 2m + 3 = 7 → m = 2. Значит f(x) = 2x + 3. Реши 2x + 3 = 21." },
+    ] },
+  ];
+
+  // Собрать тест: из каждого слота берём ОДИН случайный вариант.
+  function buildRandomTest() {
+    return slots.map(slot => {
+      const i = Math.floor(Math.random() * slot.variants.length);
+      const q = slot.variants[i];
+      return { ...q, topic: slot.topic, maxPoints: slot.maxPoints, position: slot.position };
+    });
+  }
+
+  let questions = buildRandomTest();   // текущий тест (по одному вопросу на слот)
+
+let current = 0;
+  // results[i] — наш ЕДИНСТВЕННЫЙ источник правды о прогрессе:
+  //   null  = вопрос ещё не отвечен
+  //   true  = ответ верный
+  //   false = ответ неверный
+  // Балл мы НЕ копим вручную, а вычисляем из этого массива — накрутить нельзя.
+  let results = new Array(questions.length).fill(null);
+  let inputEls = [];   // поля ответа текущего вопроса (одно или несколько)
+
+  const questionEl = document.getElementById("question");
+  const answerArea = document.getElementById("answerArea");
+  const feedbackEl = document.getElementById("feedback");
+  const scoreEl    = document.getElementById("score");
+  const progressEl = document.getElementById("progress");
+  const prevBtn    = document.getElementById("prevBtn");
+  const nextBtn    = document.getElementById("nextBtn");
+  const finishBtn  = document.getElementById("finishBtn");
+  const resultView = document.getElementById("resultView");
+  const quizView   = document.getElementById("quizView");
+  const resultText = document.getElementById("resultText");
+  const restartBtn = document.getElementById("restartBtn");
+  const hintEl = document.getElementById("hint");
+  const eyebrowEl = document.getElementById("eyebrow");
+  const checkBtn  = document.getElementById("checkBtn");
+  const qImageEl = document.getElementById("qImage");
+
+  // ---- НОВОЕ: render() "рисует" на экране ТЕКУЩИЙ вопрос.
+  // Раньше текст ставился один раз. Теперь у нас несколько вопросов,
+  // поэтому экран надо перерисовывать каждый раз, когда current меняется.
+  function render() {
+    const q = questions[current];
+    eyebrowEl.textContent  = q.topic || "";
+    questionEl.textContent = q.text;
+    progressEl.textContent = "Вопрос " + (current + 1) + " из " + questions.length;
+    show("", "");
+    hideHint();
+
+    if (q.image) {
+      qImageEl.src = q.image;
+      qImageEl.alt = "Рисунок к задаче";
+      qImageEl.hidden = false;
+    } else {
+      qImageEl.hidden = true;
+      qImageEl.removeAttribute("src");
+    }
+
+    if (q.type === "todo") {
+      answerArea.innerHTML =
+        `<span class="badge-todo">формат в разработке</span>
+         <p class="todo-note">${q.note || "Этот тип задания добавим позже."}</p>`;
+      checkBtn.hidden = true;
+      inputEls = [];
+    } else {
+      checkBtn.hidden = false;
+      if (q.type === "single" || q.type === "range") {
+        answerArea.innerHTML = `<input class="ans" type="text" placeholder="число, напр. 1/2" autocomplete="off">`;
+      } else if (q.type === "multi") {
+        answerArea.innerHTML = q.parts.map(part => `
+          <div class="box-row">
+            <span class="box-label">${part.label}</span>
+            <input class="ans" type="text" autocomplete="off">
+          </div>
+        `).join("");
+      }
+      inputEls = answerArea.querySelectorAll(".ans");
+    }
+
+    prevBtn.disabled = (current === 0);
+    nextBtn.disabled = (current === questions.length - 1);
+  }
+
+  // ---- 2. ЛОГИКА: проверка ответа текущего вопроса
+  function checkAnswer() {
+    const q = questions[current];
+    if (q.type === "todo") return;     // в заглушке проверять нечего
+
+    // --- Одно числовое поле: обычный ответ (single) ИЛИ диапазон (range) ---
+    if (q.type === "single" || q.type === "range") {
+      const raw = inputEls[0].value.trim();
+      if (raw === "") { show("Введи ответ 🙂", ""); return; }
+
+      const val = parseAnswer(raw);
+      if (val === null || Number.isNaN(val)) {
+        show("Введи только число (можно дробь, напр. 1/2) — без слов и единиц.", "bad");
+        return;
+      }
+
+      // Отличается ТОЛЬКО правило верности:
+      const ok = (q.type === "range") ? inRange(val, q) : sameNumber(val, q.correct);
+
+      results[current] = ok ? 1 : 0;
+      show(ok ? "Верно! 🎉" : "Пока неверно. Попробуй ещё раз.", ok ? "ok" : "bad");
+      if (ok) hideHint(); else showHint(q.hint);
+
+    } else if (q.type === "multi") {
+      let filledCount = 0;
+      let correctCount = 0;
+      q.parts.forEach((part, i) => {
+        const input = inputEls[i];
+        input.classList.remove("ok-box", "bad-box");
+        const raw = input.value.trim();
+        if (raw === "") return;
+        filledCount++;
+        if (sameNumber(parseAnswer(raw), part.correct)) {
+          correctCount++;
+          input.classList.add("ok-box");
+        } else {
+          input.classList.add("bad-box");
+        }
+      });
+      if (filledCount === 0) { show("Введи хотя бы один ответ 🙂", ""); return; }
+      results[current] = correctCount;
+      const total = q.parts.length;
+      if (correctCount === total) { show("Верно! 🎉", "ok"); hideHint(); }
+      else { show("Верно: " + correctCount + " из " + total + ". Попробуй остальные.", "bad"); showHint(q.hint); }
+    }
+
+    updateScore();
+  }
+
+  // Сколько баллов "стоит" вопрос: одиночный = 1, многорамочный = число рамок.
+  function maxPointsOf(q) {
+    if (q.type === "todo")  return 0;     // заглушки в балл не считаем
+    if (q.type === "multi") return q.parts.length;
+    return 1;
+  }
+
+  function updateScore() {
+    // Балл = сумма заработанного. results[i] — число баллов или null.
+    const earned = results.reduce((sum, r) => sum + (r || 0), 0);
+    const total  = questions.reduce((sum, q) => sum + maxPointsOf(q), 0);
+    scoreEl.textContent = "Баллов: " + earned + " из " + total;
+  }
+
+  // Превращает введённый текст в число. Понимает дроби "a/b", запятую и обычные числа.
+  // СПЕЦИФИКАЦИЯ ответа — что считаем верным:
+  //   целое:       12, -4
+  //   десятичное:  1.5  или  1,5
+  //   дробь:       4/3, -1/12, 8/6 (несократимые тоже принимаем — считаем по значению)
+  // НЕ принимаем:  округлённое (1.33 вместо 4/3) и запись в скобках 1.(3).
+  function parseAnswer(raw) {
+    raw = raw.trim().replace(",", ".");      // запятую приводим к точке
+    if (raw === "") return null;
+    if (raw.includes("/")) {                 // дробь вида "a/b"
+      const [num, den] = raw.split("/");
+      const n = Number(num), d = Number(den);
+      if (!isFinite(n) || !isFinite(d) || d === 0) return NaN;
+      return n / d;
+    }
+    return Number(raw);                       // просто число
+  }
+
+  // Сравниваем числа с маленьким допуском, а НЕ через ===.
+  function sameNumber(a, b) {
+    return Math.abs(a - b) < 1e-9;
+  }
+
+  // Лежит ли число val в допустимом диапазоне вопроса.
+  // Границы необязательные; по умолчанию строгие (без равенства).
+  function inRange(val, q) {
+    if (q.min != null) {
+      if (q.minInclusive ? val < q.min : val <= q.min) return false;
+    }
+    if (q.max != null) {
+      if (q.maxInclusive ? val > q.max : val >= q.max) return false;
+    }
+    return true;
+  }
+
+  function showHint(text) {
+    if (!text) { hideHint(); return; }   // у вопроса может не быть подсказки
+    hintEl.textContent = "💡 " + text;
+    hintEl.hidden = false;
+  }
+  function hideHint() {
+    hintEl.hidden = true;
+  }
+
+  // Показать экран результата: считаем верные ответы и переключаем вид.
+  function showResult() {
+    const earned = results.reduce((sum, r) => sum + (r || 0), 0);
+    const total  = questions.reduce((sum, q) => sum + maxPointsOf(q), 0);
+    resultText.textContent = "Ты набрала " + earned + " из " + total + " баллов";
+    quizView.hidden = true;
+    resultView.hidden = false;
+  }
+
+  // Начать заново: сбрасываем единственный источник правды — остальное пересчитается само.
+  function restart() {
+    questions = buildRandomTest();   // новый случайный вариант теста
+    results = new Array(questions.length).fill(null);
+    current = 0;
+    resultView.hidden = true;
+    quizView.hidden = false;
+    updateScore();
+    render();
+  }
+
+  function show(message, type) {
+    feedbackEl.textContent = message;
+    feedbackEl.className = "feedback " + type;
+  }
+
+  // ---- 3. НАВИГАЦИЯ: меняем current и перерисовываем экран
+  function goNext() { if (current < questions.length - 1) { current++; render(); } }
+  function goPrev() { if (current > 0)                    { current--; render(); } }
+
+  document.getElementById("checkBtn").addEventListener("click", checkAnswer);
+  answerArea.addEventListener("keydown", (e) => { if (e.key === "Enter") checkAnswer(); });
+  // Разрешаем вводить только символы числа: цифры, минус, дробь, точку/запятую.
+  // Работает для всех полей — и одиночных, и рамок.
+  answerArea.addEventListener("input", (e) => {
+    if (e.target.classList.contains("ans")) {
+      e.target.value = e.target.value.replace(/[^0-9.,\/-]/g, "");
+    }
+  });
+  nextBtn.addEventListener("click", goNext);
+  prevBtn.addEventListener("click", goPrev);
+  finishBtn.addEventListener("click", showResult);
+  restartBtn.addEventListener("click", restart);
+
+  updateScore();
+  render();   // первый показ при загрузке страницы
+</script>
+</body>
+</html>
