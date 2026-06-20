@@ -104,6 +104,21 @@
   .tip { margin: 0 0 14px; padding: 12px 14px; background: #e9f6f1; border-left: 3px solid var(--ok);
     border-radius: 10px; font-size: 14px; color: var(--ink); line-height: 1.45; }
   .tip[hidden] { display: none; }
+  .modal-overlay { position: fixed; inset: 0; background: rgba(31,36,64,.45);
+    display: flex; align-items: center; justify-content: center; padding: 20px; z-index: 100; }
+  .modal-overlay[hidden] { display: none; }
+  .modal-card { background: var(--card); max-width: 420px; width: 100%;
+    border-radius: 18px; padding: 26px; box-shadow: 0 20px 60px rgba(31,36,64,.25); }
+  .modal-title { margin: 0 0 14px; font-size: 20px; }
+  .modal-rules { margin: 0 0 16px; padding-left: 20px; font-size: 14px; line-height: 1.5; }
+  .modal-rules li { margin-bottom: 8px; }
+  .modal-check { display: flex; align-items: center; gap: 8px; font-size: 14px; color: var(--muted); margin-bottom: 8px; cursor: pointer; }
+  .modal-check input { width: 18px; height: 18px; flex: none; padding: 0; border: none; }
+  .modal-note { margin: 0 0 18px; font-size: 13px; color: var(--muted); }
+  .modal-btn { width: 100%; }
+  .rules-fab { position: fixed; right: 16px; bottom: 16px; z-index: 50;
+    background: var(--card); color: var(--brand); border: 1.5px solid var(--line);
+    border-radius: 999px; padding: 10px 16px; font-size: 14px; box-shadow: 0 6px 20px rgba(31,36,64,.12); }
 </style>
 </head>
 <body>
@@ -143,6 +158,28 @@
       <p class="feedback" id="resultPass"></p>
       <button id="restartBtn">Пройти заново</button>
     </div>
+    <!-- Окно с правилами -->
+  <div class="modal-overlay" id="rulesOverlay" hidden>
+    <div class="modal-card">
+      <h2 class="modal-title">Как пользоваться тренажёром</h2>
+      <ul class="modal-rules">
+        <li>Сначала реши задание на бумаге или в уме — и только потом вводи ответ и нажимай «Проверить».</li>
+        <li>После проверки в блоке «Самопроверка по барему» отметь этапы, которые ты выполнил — из них складывается балл за задачу.</li>
+        <li>Кнопка «?» у задания показывает формулу или метод (без ответа) — если нужна подсказка до решения.</li>
+        <li>В конце ты увидишь набранные баллы и примерную оценку по 10-балльной шкале.</li>
+        <li>Оценка <b>примерная</b>: настоящую ставит живой проверяющий, и она зависит от того, насколько честно отмечены этапы.</li>
+      </ul>
+      <label class="modal-check">
+        <input type="checkbox" id="dontShowRules">
+        Больше не показывать в этой сессии
+      </label>
+      <p class="modal-note">Правила всегда можно открыть кнопкой «Правила» внизу справа.</p>
+      <button id="closeRulesBtn" class="modal-btn">Понятно, начать</button>
+    </div>
+  </div>
+
+  <!-- Кнопка, чтобы открыть правила снова -->
+  <button id="openRulesBtn" class="rules-fab" title="Правила">Правила</button>
   </main>
 
 <script>
@@ -322,6 +359,12 @@ let current = 0;
   const resultPass  = document.getElementById("resultPass");
   const helpBtn = document.getElementById("helpBtn");
   const tipEl   = document.getElementById("tip");
+  const rulesOverlay  = document.getElementById("rulesOverlay");
+  const dontShowRules = document.getElementById("dontShowRules");
+  const closeRulesBtn = document.getElementById("closeRulesBtn");
+  const openRulesBtn  = document.getElementById("openRulesBtn");
+
+  
 
   // ---- НОВОЕ: render() "рисует" на экране ТЕКУЩИЙ вопрос.
   // Раньше текст ставился один раз. Теперь у нас несколько вопросов,
@@ -582,6 +625,21 @@ let current = 0;
   function goNext() { if (current < questions.length - 1) { current++; render(); } }
   function goPrev() { if (current > 0)                    { current--; render(); } }
 
+  function showRules() { rulesOverlay.hidden = false; }
+  function hideRules() { rulesOverlay.hidden = true; }
+
+  // Показать правила при загрузке, если в этой сессии их не отключили.
+  let skipRules = false;
+  try { skipRules = sessionStorage.getItem("hideRules") === "1"; } catch (e) {}
+  if (!skipRules) showRules();
+
+  closeRulesBtn.addEventListener("click", () => {
+    if (dontShowRules.checked) {
+      try { sessionStorage.setItem("hideRules", "1"); } catch (e) {}
+    }
+    hideRules();
+  });
+  openRulesBtn.addEventListener("click", showRules);
   document.getElementById("checkBtn").addEventListener("click", checkAnswer);
   answerArea.addEventListener("keydown", (e) => { if (e.key === "Enter") checkAnswer(); });
   // Разрешаем вводить только символы числа: цифры, минус, дробь, точку/запятую.
