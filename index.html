@@ -95,16 +95,27 @@
   .barem-text { flex: 1; }
   .barem-pts { color: var(--muted); font-size: 13px; white-space: nowrap; }
   .barem-score { margin: 10px 0 0; font-size: 14px; font-weight: 600; color: var(--brand); }
+  .q-header { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+  .help-btn { width: 32px; height: 32px; padding: 0; border-radius: 50%;
+    background: var(--card); color: var(--brand); border: 1.5px solid var(--line);
+    font-size: 16px; font-weight: 700; line-height: 1; }
+  .help-btn:hover { background: #eef1fb; }
+  .help-btn[hidden] { display: none; }
+  .tip { margin: 0 0 14px; padding: 12px 14px; background: #e9f6f1; border-left: 3px solid var(--ok);
+    border-radius: 10px; font-size: 14px; color: var(--ink); line-height: 1.45; }
+  .tip[hidden] { display: none; }
 </style>
 </head>
 <body>
 <main class="card">
     <!-- ВИД 1: сам тренажёр -->
-    <div id="quizView">
-      <p class="eyebrow" id="eyebrow"></p>
+   <div class="q-header">
+        <p class="eyebrow" id="eyebrow"></p>
+        <button id="helpBtn" class="help-btn" title="Формула / подсказка" hidden>?</button>
+      </div>
       <h1 class="question" id="question"></h1>
       <img class="q-image" id="qImage" alt="" hidden>
-
+      <div class="tip" id="tip" hidden></div>
       <div id="answerArea"></div>
       <button id="checkBtn">Проверить</button>
 
@@ -139,6 +150,7 @@
   const slots = [
     { position: 1, topic: "Арифметика и степени", maxPoints: 3, variants: [
       { type: "multi", text: "Пусть $a = 0{,}25 \\cdot 8$ и $b = 7 - 11$. Впиши целые числа:",
+        tip: "$0{,}25 = \\frac{1}{4}$. Посчитай $a$ и $b$ по отдельности, затем найди их частное $\\frac{b}{a}$.",
         hint: "$0{,}25 = \\frac{1}{4}$, значит $a = \\frac{1}{4}\\cdot 8$. $b = 7 - 11$. А $\\frac{b}{a}$ — это $b$ разделить на $a$.",
         parts: [ { label: "a =", correct: 2 }, { label: "b =", correct: -4 }, { label: "b/a =", correct: -2 } ] },
     ] },
@@ -146,6 +158,7 @@
       { type: "multi",
         text: "$DK$ — биссектриса угла $ADC$ параллелограмма $ABCD$, $\\angle DAB = 140^{\\circ}$. Найди величины углов.",
         image: "images/task2-parallelogram.png",
+        tip: "Соседние углы параллелограмма в сумме дают $180^{\\circ}$. Биссектриса делит угол пополам. Сумма углов треугольника $= 180^{\\circ}$.",
         hint: "Соседние углы параллелограмма дают $180^{\\circ}$: $\\angle ADC = 180^{\\circ} - 140^{\\circ}$. $DK$ делит $\\angle ADC$ пополам. В треугольнике $AKD$ сумма углов $= 180^{\\circ}$.",
         parts: [ { label: "∠ADC =", correct: 40 }, { label: "∠AKD =", correct: 20 } ] },
     ] },
@@ -153,13 +166,14 @@
       { type: "range",
         text: "$f(x) = x^2 - 4x + c$. Впиши такое $c$, чтобы парабола пересекала ось $Ox$ в двух точках.",
         max: 4,
+        tip: "Парабола пересекает ось $Ox$ в двух точках, когда дискриминант $D = b^2 - 4ac > 0$.",
         hint: "Дискриминант больше 0: $16 - 4c > 0$, то есть $c < 4$. Подойдёт любое число меньше 4.",
         barem: [ { text: "Вписал верное число (любое $c < 4$)", points: 2, auto: true } ] },
     ] },
     { position: 4, topic: "Текстовая задача: работа", maxPoints: 5, variants: [
-      { type: "single",
+      { type: "single", correct: 2,
         text: "Трактористу нужно вспахать 116 га. За 6 дней он вспахал 87 га. За сколько дней он вспашет остаток?",
-        correct: 2,
+        tip: "Найди оставшуюся площадь. Скорость работы постоянна — составь пропорцию «площадь — время» и найди недостающее время.",
         hint: "Осталось $116 - 87 = 29$ га. Скорость: 87 га за 6 дней. Дни $= \\frac{29 \\cdot 6}{87}$.",
         barem: [
           { text: "Записал «87 га — 6 дней»", points: 1 },
@@ -168,9 +182,9 @@
           { text: "Получил верный ответ $x = 2$", points: 1, auto: true } ] },
     ] },
     { position: 5, topic: "Степени: вычисление", maxPoints: 5, variants: [
-      { type: "single",
+      { type: "single", correct: 4,
         text: "Вычисли: $\\left(\\frac{1}{3}\\right)^{-25} \\cdot 9^{-12} + \\left(\\frac{1}{3}\\right)^{0}$",
-        correct: 4,
+        tip: "Свойства степеней: $x^m \\cdot x^n = x^{m+n}$, $(x^m)^n = x^{m \\cdot n}$, $x^0 = 1$. Приведи всё к одному основанию.",
         hint: "$\\left(\\frac{1}{3}\\right)^{-25} = 3^{25}$, а $9^{-12} = 3^{-24}$. Перемножь степени тройки, потом прибавь $\\left(\\frac{1}{3}\\right)^{0} = 1$.",
         barem: [
           { text: "$\\left(\\frac{1}{3}\\right)^{-25} = 3^{25}$", points: 1 },
@@ -180,19 +194,19 @@
           { text: "Выполнил действия, получил 4", points: 1, auto: true } ] },
     ] },
     { position: 6, topic: "Уравнение: обратное число", maxPoints: 4, variants: [
-      { type: "single",
+      { type: "single", correct: 4/3,
         text: "Найди обратное число к ненулевому решению уравнения $4x^2 - 3x = 0$.",
-        correct: 4/3,
+        tip: "Чтобы решить $ax^2 + bx = 0$, вынеси $x$ за скобку: произведение равно нулю, когда один из множителей ноль. Обратное число к $k$ — это $\\frac{1}{k}$.",
         hint: "$x(4x - 3) = 0$ → корни $0$ и $\\frac{3}{4}$. Ненулевой — $\\frac{3}{4}$, обратное к нему — $\\frac{4}{3}$.",
         barem: [
           { text: "Решил уравнение $4x^2 - 3x = 0$ (корни $0$ и $\\frac{3}{4}$)", points: 3 },
           { text: "Записал верный ответ $\\frac{4}{3}$", points: 1, auto: true } ] },
     ] },
     { position: 7, topic: "Геометрия: окружность", maxPoints: 5, variants: [
-      { type: "single",
+      { type: "single", correct: 24,
         text: "Длина окружности $26\\pi$ см. На расстоянии 5 см от центра проведена хорда. Найди длину хорды (в см).",
-        correct: 24,
         image: "images/task7-cyrcle.png",
+        tip: "Длина окружности: $C = 2\\pi r$. Перпендикуляр из центра делит хорду пополам; радиус, расстояние до хорды и половина хорды образуют прямоугольный треугольник (теорема Пифагора).",
         hint: "$2\\pi r = 26\\pi$ → $r = 13$. Радиус, расстояние 5 и половина хорды образуют прямоугольный треугольник: половина $= \\sqrt{13^2 - 5^2}$. Хорда вдвое больше.",
         barem: [
           { text: "Нашёл радиус ($r = 13$)", points: 2 },
@@ -202,6 +216,7 @@
     { position: 8, topic: "Текстовая задача: система", maxPoints: 5, variants: [
       { type: "multi",
         text: "Илинка и Богдан собрали вместе 68 грибов. Чтобы стало поровну, Богдан отдал Илинке 6 грибов. Сколько собрал каждый?",
+        tip: "Обозначь количества буквами. Составь систему из двух уравнений: одно про сумму, второе про условие «поровну после передачи».",
         hint: "После передачи поровну — по 34. Значит Богдан имел $34 + 6$, Илинка $34 - 6$.",
         parts: [ { label: "Богдан =", correct: 40 }, { label: "Илинка =", correct: 28 } ],
         barem: [
@@ -212,6 +227,7 @@
     { position: 9, topic: "Функция: область определения", maxPoints: 5, variants: [
       { type: "open",
         text: "$f(x) = \\sqrt{3 - 2x}$. Найди $x$ из области определения, при которых $2x > x$.",
+        tip: "Под корнем $\\sqrt{\\;}$ выражение должно быть $\\ge 0$ — это область определения. Реши систему: условие ОДЗ и заданное неравенство, затем возьми их пересечение.",
         solution:
           "Область определения: $3 - 2x \\ge 0 \\Rightarrow x \\le \\frac{3}{2}$.\n" +
           "Условие $2x > x \\Leftrightarrow x > 0$.\n" +
@@ -223,10 +239,10 @@
           { text: "Записал ответ $x \\in \\left(0;\\ \\frac{3}{2}\\right]$", points: 1 } ] },
     ] },
     { position: 10, topic: "Стереометрия: призма", maxPoints: 4, variants: [
-      { type: "single",
+      { type: "single", correct: 2,
         text: "Основание прямой призмы — прямоугольный треугольник с катетами 3 и 4 см. Площадь боковой поверхности 24 см². Найди высоту призмы (в см).",
-        correct: 2,
         image: "images/task10-prism.png",
+        tip: "Боковая поверхность прямой призмы равна $P \\cdot h$ (периметр основания, умноженный на высоту). Стороны основания найди по теореме Пифагора.",
         hint: "Гипотенуза основания: $\\sqrt{3^2 + 4^2} = 5$. Периметр $P = 3 + 4 + 5$. Боковая поверхность $= P \\cdot h$, отсюда $h = \\frac{24}{P}$.",
         barem: [
           { text: "Нашёл гипотенузу основания ($= 5$)", points: 1 },
@@ -236,6 +252,7 @@
     { position: 11, topic: "Алгебраические дроби", maxPoints: 6, variants: [
       { type: "open",
         text: "Покажи, что для любого натурального $X$ выражение $E(X) = \\dfrac{2X^3 + 3X^2 - 2X}{(2X+1)(1-X) - 1}$ — целое отрицательное число.",
+        tip: "Разложи числитель и знаменатель на множители и сократи общие. Полезно: $ax^2 + bx + c = a(x - x_1)(x - x_2)$.",
         solution:
           "Числитель: $2X^3 + 3X^2 - 2X = X(2X^2 + 3X - 2) = X(X + 2)(2X - 1)$.\n" +
           "Знаменатель: $(2X + 1)(1 - X) - 1 = -2X^2 + X = -X(2X - 1)$.\n" +
@@ -248,9 +265,9 @@
           { text: "Получил $E(X) = -(X + 2)$ и вывод об отрицательном целом", points: 1 } ] },
     ] },
     { position: 12, topic: "Функция: линейная модель", maxPoints: 4, variants: [
-      { type: "single",
+      { type: "single", correct: 9,
         text: "Капитал компании задан $f(x) = m \\cdot x + 3$ (где $x \\ge 0$ — годы). За 2 года он вырос до 7 млн. За сколько лет вырастет до 21 млн?",
-        correct: 9,
+        tip: "Линейная функция $f(x) = mx + b$. Подставь известную точку, чтобы найти коэффициент $m$, затем реши уравнение для нужного значения.",
         hint: "Из $f(2) = 7$: $2m + 3 = 7 \\Rightarrow m = 2$. Значит $f(x) = 2x + 3$. Реши $2x + 3 = 21$.",
         barem: [
           { text: "Составил уравнение $2m + 3 = 7$", points: 1 },
@@ -301,6 +318,8 @@ let current = 0;
   const baremEl = document.getElementById("barem");
   const resultScore = document.getElementById("resultScore");
   const resultPass  = document.getElementById("resultPass");
+  const helpBtn = document.getElementById("helpBtn");
+  const tipEl   = document.getElementById("tip");
 
   // ---- НОВОЕ: render() "рисует" на экране ТЕКУЩИЙ вопрос.
   // Раньше текст ставился один раз. Теперь у нас несколько вопросов,
@@ -313,6 +332,9 @@ let current = 0;
     progressEl.textContent = "Вопрос " + (current + 1) + " из " + questions.length;
     show("", "");
     hideHint();
+    helpBtn.hidden = !q.tip;   // «?» есть только там, где задан абстрактный совет
+    tipEl.hidden = true;
+    tipEl.innerHTML = "";
     baremEl.hidden = true;      // самопроверку по барему прячем при переходе
     baremEl.innerHTML = "";
 
@@ -584,6 +606,17 @@ let current = 0;
   restartBtn.addEventListener("click", restart);
   baremEl.addEventListener("change", (e) => {
     if (e.target.classList.contains("barem-cb")) applyBarem(questions[current]);
+  });
+  helpBtn.addEventListener("click", () => {
+    const q = questions[current];
+    if (!q.tip) return;
+    if (tipEl.hidden) {
+      tipEl.innerHTML = "📐 " + q.tip;
+      renderMath(tipEl);
+      tipEl.hidden = false;
+    } else {
+      tipEl.hidden = true;
+    }
   });
 
   updateScore();
