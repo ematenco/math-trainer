@@ -169,10 +169,6 @@
         <li>В конце ты увидишь набранные баллы и примерную оценку по 10-балльной шкале.</li>
         <li>Оценка <b>примерная</b>: настоящую ставит живой проверяющий, и она зависит от того, насколько честно отмечены этапы.</li>
       </ul>
-      <label class="modal-check">
-        <input type="checkbox" id="dontShowRules">
-        Больше не показывать в этой сессии
-      </label>
       <p class="modal-note">Правила всегда можно открыть кнопкой «Правила» внизу справа.</p>
       <button id="closeRulesBtn" class="modal-btn">Понятно, начать</button>
     </div>
@@ -360,11 +356,10 @@ let current = 0;
   const helpBtn = document.getElementById("helpBtn");
   const tipEl   = document.getElementById("tip");
   const rulesOverlay  = document.getElementById("rulesOverlay");
-  const dontShowRules = document.getElementById("dontShowRules");
   const closeRulesBtn = document.getElementById("closeRulesBtn");
   const openRulesBtn  = document.getElementById("openRulesBtn");
 
-  
+
 
   // ---- НОВОЕ: render() "рисует" на экране ТЕКУЩИЙ вопрос.
   // Раньше текст ставился один раз. Теперь у нас несколько вопросов,
@@ -628,15 +623,13 @@ let current = 0;
   function showRules() { rulesOverlay.hidden = false; }
   function hideRules() { rulesOverlay.hidden = true; }
 
-  // Показать правила при загрузке, если в этой сессии их не отключили.
-  let skipRules = false;
-  try { skipRules = sessionStorage.getItem("hideRules") === "1"; } catch (e) {}
-  if (!skipRules) showRules();
+  // Показать правила только в ПЕРВЫЙ раз — запоминаем навсегда в localStorage.
+  let rulesSeen = false;
+  try { rulesSeen = localStorage.getItem("rulesSeen") === "1"; } catch (e) {}
+  if (!rulesSeen) showRules();
 
   closeRulesBtn.addEventListener("click", () => {
-    if (dontShowRules.checked) {
-      try { sessionStorage.setItem("hideRules", "1"); } catch (e) {}
-    }
+    try { localStorage.setItem("rulesSeen", "1"); } catch (e) {}
     hideRules();
   });
   openRulesBtn.addEventListener("click", showRules);
