@@ -112,17 +112,25 @@
   .modal-title { margin: 0 0 14px; font-size: 20px; }
   .modal-rules { margin: 0 0 16px; padding-left: 20px; font-size: 14px; line-height: 1.5; }
   .modal-rules li { margin-bottom: 8px; }
-  .modal-check { display: flex; align-items: center; gap: 8px; font-size: 14px; color: var(--muted); margin-bottom: 8px; cursor: pointer; }
-  .modal-check input { width: 18px; height: 18px; flex: none; padding: 0; border: none; }
   .modal-note { margin: 0 0 18px; font-size: 13px; color: var(--muted); }
   .modal-btn { width: 100%; }
   .rules-fab { position: fixed; right: 16px; bottom: 16px; z-index: 50;
     background: var(--card); color: var(--brand); border: 1.5px solid var(--line);
     border-radius: 999px; padding: 10px 16px; font-size: 14px; box-shadow: 0 6px 20px rgba(31,36,64,.12); }
+  .menu-sub { color: var(--muted); font-size: 14px; margin: 4px 0 20px; }
+  .start-btn { width: 100%; }
 </style>
 </head>
 <body>
 <main class="card">
+  <!-- ВИД 0: стартовое меню -->
+    <div id="menuView">
+      <p class="eyebrow">Тренажёр</p>
+      <h1 class="question">Подготовка к экзамену по математике</h1>
+      <p class="menu-sub">9 класс · 12 заданий · 50 баллов</p>
+      <button id="startBtn" class="start-btn">Пройти тест</button>
+    </div>
+
     <!-- ВИД 1: сам тренажёр -->
     <div id="quizView">
       <div class="q-header">
@@ -156,7 +164,7 @@
       <h1 class="question" id="resultText"></h1>
       <p class="score" id="resultScore"></p>
       <p class="feedback" id="resultPass"></p>
-      <button id="restartBtn">Пройти заново</button>
+      <button id="restartBtn">В меню</button>
     </div>
     <!-- Окно с правилами -->
   <div class="modal-overlay" id="rulesOverlay" hidden>
@@ -358,6 +366,8 @@ let current = 0;
   const rulesOverlay  = document.getElementById("rulesOverlay");
   const closeRulesBtn = document.getElementById("closeRulesBtn");
   const openRulesBtn  = document.getElementById("openRulesBtn");
+  const menuView = document.getElementById("menuView");
+  const startBtn = document.getElementById("startBtn");
 
 
 
@@ -589,12 +599,20 @@ let current = 0;
     resultView.hidden = false;
   }
 
-  // Начать заново: сбрасываем единственный источник правды — остальное пересчитается само.
-  function restart() {
-    questions = buildRandomTest();   // новый случайный вариант теста
+  // Показать стартовое меню (прячем тест и результат).
+  function showMenu() {
+    menuView.hidden = false;
+    quizView.hidden = true;
+    resultView.hidden = true;
+  }
+
+  // Начать тест: свежий вариант, сброс прогресса, показываем тренажёр.
+  function startTest() {
+    questions = buildRandomTest();
     results = new Array(questions.length).fill(null);
     baremState = {};
     current = 0;
+    menuView.hidden = true;
     resultView.hidden = true;
     quizView.hidden = false;
     updateScore();
@@ -656,7 +674,8 @@ let current = 0;
   nextBtn.addEventListener("click", goNext);
   prevBtn.addEventListener("click", goPrev);
   finishBtn.addEventListener("click", showResult);
-  restartBtn.addEventListener("click", restart);
+  startBtn.addEventListener("click", startTest);
+  restartBtn.addEventListener("click", showMenu);   // с результата — назад в меню
   baremEl.addEventListener("change", (e) => {
     if (e.target.classList.contains("barem-cb")) applyBarem(questions[current]);
   });
@@ -672,8 +691,7 @@ let current = 0;
     }
   });
 
-  updateScore();
-  render();   // первый показ при загрузке страницы
+  showMenu();
 </script>
 </body>
 </html>
