@@ -128,7 +128,8 @@
       <p class="eyebrow">Тренажёр</p>
       <h1 class="question">Подготовка к экзамену по математике</h1>
       <p class="menu-sub">9 класс · 12 заданий · 50 баллов</p>
-      <button id="startBtn" class="start-btn">Пройти тест</button>
+      <button id="test1Btn" class="start-btn">Тест №1</button>
+      <button id="test2Btn" class="start-btn">Тест №2</button>
     </div>
 
     <!-- ВИД 1: сам тренажёр -->
@@ -320,16 +321,25 @@
     ] },
   ];
 
-  // Собрать тест: из каждого слота берём ОДИН случайный вариант.
+  // Собрать тест: из каждого слота берём вариант с номером i (нумерация с 0).
+  // Если у слота нет такого варианта — берём первый (страховка, ничего не падает).
+  function buildTest(i) {
+    return slots.map(slot => {
+      const q = slot.variants[i] || slot.variants[0];
+      return { ...q, topic: q.topic || slot.topic, maxPoints: slot.maxPoints, position: slot.position };
+    });
+  }
+
+  // Случайный тест (понадобится на следующем шаге).
   function buildRandomTest() {
     return slots.map(slot => {
       const i = Math.floor(Math.random() * slot.variants.length);
       const q = slot.variants[i];
-      return { ...q, topic: slot.topic, maxPoints: slot.maxPoints, position: slot.position };
+      return { ...q, topic: q.topic || slot.topic, maxPoints: slot.maxPoints, position: slot.position };
     });
   }
 
-  let questions = buildRandomTest();   // текущий тест (по одному вопросу на слот)
+  let questions = buildTest(0);
 
 let current = 0;
   // results[i] — наш ЕДИНСТВЕННЫЙ источник правды о прогрессе:
@@ -368,6 +378,8 @@ let current = 0;
   const openRulesBtn  = document.getElementById("openRulesBtn");
   const menuView = document.getElementById("menuView");
   const startBtn = document.getElementById("startBtn");
+  const test1Btn = document.getElementById("test1Btn");
+  const test2Btn = document.getElementById("test2Btn");
 
 
 
@@ -607,8 +619,8 @@ let current = 0;
   }
 
   // Начать тест: свежий вариант, сброс прогресса, показываем тренажёр.
-  function startTest() {
-    questions = buildRandomTest();
+  function startTest(i) {
+    questions = buildTest(i);
     results = new Array(questions.length).fill(null);
     baremState = {};
     current = 0;
@@ -675,6 +687,8 @@ let current = 0;
   prevBtn.addEventListener("click", goPrev);
   finishBtn.addEventListener("click", showResult);
   startBtn.addEventListener("click", startTest);
+  test1Btn.addEventListener("click", () => startTest(0));
+  test2Btn.addEventListener("click", () => startTest(1));
   restartBtn.addEventListener("click", showMenu);   // с результата — назад в меню
   baremEl.addEventListener("change", (e) => {
     if (e.target.classList.contains("barem-cb")) applyBarem(questions[current]);
