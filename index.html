@@ -129,6 +129,7 @@
       <p class="eyebrow">Тренажёр</p>
       <h1 class="question">Подготовка к экзамену по математике</h1>
       <p class="menu-sub">9 класс · 12 заданий · 50 баллов</p>
+      <button id="randomBtn" class="start-btn">Случайные задания</button>
       <button id="test1Btn" class="start-btn">Тест №1</button>
       <button id="test2Btn" class="start-btn">Тест №2</button>
     </div>
@@ -486,6 +487,7 @@ let current = 0;
   const menuView = document.getElementById("menuView");
   const test1Btn = document.getElementById("test1Btn");
   const test2Btn = document.getElementById("test2Btn");
+  const randomBtn = document.getElementById("randomBtn");
 
 
 
@@ -724,9 +726,9 @@ let current = 0;
     resultView.hidden = true;
   }
 
-  // Начать тест №i: собираем выбранный тест, сбрасываем прогресс, показываем тренажёр.
-  function startTest(i) {
-    questions = buildTest(i);
+  // Запустить тренажёр с готовым набором вопросов (общая часть для всех режимов).
+  function startWith(qs) {
+    questions = qs;
     results = new Array(questions.length).fill(null);
     baremState = {};
     current = 0;
@@ -736,6 +738,10 @@ let current = 0;
     updateScore();
     render();
   }
+
+  // Конкретный тест (№1 или №2) и случайный набор — тонкие обёртки над startWith.
+  function startTest(i)  { startWith(buildTest(i)); }
+  function startRandom() { startWith(buildRandomTest()); }
 
   function show(message, type) {
     feedbackEl.textContent = message;
@@ -809,6 +815,7 @@ let current = 0;
       tipEl.hidden = true;
     }
   });
+  randomBtn.addEventListener("click", startRandom);
 
   showMenu();
 </script>
