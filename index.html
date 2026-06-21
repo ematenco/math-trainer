@@ -377,7 +377,6 @@ let current = 0;
   const closeRulesBtn = document.getElementById("closeRulesBtn");
   const openRulesBtn  = document.getElementById("openRulesBtn");
   const menuView = document.getElementById("menuView");
-  const startBtn = document.getElementById("startBtn");
   const test1Btn = document.getElementById("test1Btn");
   const test2Btn = document.getElementById("test2Btn");
 
@@ -686,7 +685,6 @@ let current = 0;
   nextBtn.addEventListener("click", goNext);
   prevBtn.addEventListener("click", goPrev);
   finishBtn.addEventListener("click", showResult);
-  startBtn.addEventListener("click", startTest);
   test1Btn.addEventListener("click", () => startTest(0));
   test2Btn.addEventListener("click", () => startTest(1));
   restartBtn.addEventListener("click", showMenu);   // с результата — назад в меню
