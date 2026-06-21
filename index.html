@@ -547,7 +547,10 @@ let current = 0;
       inputEls = answerArea.querySelectorAll(".ans");
     }
 
-    prevBtn.disabled = (current === 0);
+    // На первом вопросе «Назад» ведёт в меню — не блокируем кнопку,
+    // а меняем подпись, чтобы было видно, куда она ведёт.
+    prevBtn.disabled = false;
+    prevBtn.textContent = (current === 0) ? "← В меню" : "← Назад";
     nextBtn.disabled = (current === questions.length - 1);
   }
 
@@ -760,7 +763,10 @@ let current = 0;
 
   // ---- 3. НАВИГАЦИЯ: меняем current и перерисовываем экран
   function goNext() { if (current < questions.length - 1) { current++; render(); } }
-  function goPrev() { if (current > 0)                    { current--; render(); } }
+  function goPrev() {
+    if (current === 0) { showMenu(); }   // с первого вопроса — назад в меню
+    else { current--; render(); }
+  }
 
   function showRules() { rulesOverlay.hidden = false; }
   function hideRules() { rulesOverlay.hidden = true; }
