@@ -120,6 +120,7 @@
   .menu-sub { color: var(--muted); font-size: 14px; margin: 4px 0 20px; }
   .start-btn { width: 100%; }
   .start-btn + .start-btn { margin-top: 10px; }
+  #drillBackBtn { margin-top: 16px; }
 </style>
 </head>
 <body>
@@ -129,9 +130,19 @@
       <p class="eyebrow">Тренажёр</p>
       <h1 class="question">Подготовка к экзамену по математике</h1>
       <p class="menu-sub">9 класс · 12 заданий · 50 баллов</p>
+      <button id="drillMenuBtn" class="start-btn">Тренировка по теме</button>
       <button id="randomBtn" class="start-btn">Случайные задания</button>
       <button id="test1Btn" class="start-btn">Тест №1</button>
       <button id="test2Btn" class="start-btn">Тест №2</button>
+    </div>
+
+    <!-- ВИД 0b: выбор темы для тренировки -->
+    <div id="drillView" hidden>
+      <p class="eyebrow">Тренировка по теме</p>
+      <h1 class="question">Выбери тип задания</h1>
+      <p class="menu-sub">Решаешь только задачи одной темы — все варианты, что есть.</p>
+      <div id="topicList"></div>
+      <button id="drillBackBtn" class="start-btn">← В меню</button>
     </div>
 
     <!-- ВИД 1: сам тренажёр -->
@@ -197,12 +208,13 @@
       { type: "multi", text: "Пусть $a = 0{,}25 \\cdot 8$ и $b = 7 - 11$. Впиши целые числа:",
         tip: "$0{,}25 = \\frac{1}{4}$. Посчитай $a$ и $b$ по отдельности, затем найди их частное $\\frac{b}{a}$.",
         hint: "$0{,}25 = \\frac{1}{4}$, значит $a = \\frac{1}{4}\\cdot 8$. $b = 7 - 11$. А $\\frac{b}{a}$ — это $b$ разделить на $a$.",
-        parts: [ { label: "a =", correct: 2 }, { label: "b =", correct: -4 }, { label: "b/a =", correct: -2 } ] },
+        parts: [ { label: "$a =$", correct: 2 }, { label: "$b =$", correct: -4 }, { label: "$\\dfrac{b}{a} =$", correct: -2 } ] },
+
       { type: "multi", topic: "Арифметика и дроби",
         text: "Пусть $a = \\frac{1}{4} - \\frac{1}{3}$ и $b = (-6)^2$. Впиши значения:",
         tip: "Дроби — к общему знаменателю. Чётная степень отрицательного числа положительна. $a\\cdot b$ — произведение найденных значений.",
         hint: "$\\frac{1}{4} - \\frac{1}{3} = \\frac{3 - 4}{12} = -\\frac{1}{12}$. $(-6)^2 = 36$. Потом перемножь.",
-        parts: [ { label: "a =", correct: -1/12 }, { label: "b =", correct: 36 }, { label: "a·b =", correct: -3 } ] },
+        parts: [ { label: "$a =$", correct: -1/12 }, { label: "$b =$", correct: 36 }, { label: "$\\dfrac{a}{b} =$", correct: -1/12 } ] },
     ] },
     { position: 2, topic: "Геометрия: параллелограмм", maxPoints: 2, variants: [
       { type: "multi",
@@ -449,7 +461,8 @@
 
   let questions = buildTest(0);   // текущий тест (по одному вопросу на слот)
 
-let current = 0;
+  let current = 0;
+  let mode = "test";   // "test" — тест/случайный, "drill" — тренировка по теме
   // results[i] — наш ЕДИНСТВЕННЫЙ источник правды о прогрессе:
   //   null  = вопрос ещё не отвечен
   //   true  = ответ верный
@@ -488,6 +501,10 @@ let current = 0;
   const test1Btn = document.getElementById("test1Btn");
   const test2Btn = document.getElementById("test2Btn");
   const randomBtn = document.getElementById("randomBtn");
+  const drillView    = document.getElementById("drillView");
+  const topicList    = document.getElementById("topicList");
+  const drillMenuBtn = document.getElementById("drillMenuBtn");
+  const drillBackBtn = document.getElementById("drillBackBtn");
 
 
 
@@ -546,6 +563,8 @@ let current = 0;
       }
       inputEls = answerArea.querySelectorAll(".ans");
     }
+
+    renderMath(answerArea);   // ярлыки рамок тоже могут содержать формулы ($...$)
 
     // На первом вопросе «Назад» ведёт в меню — не блокируем кнопку,
     // а меняем подпись, чтобы было видно, куда она ведёт.
@@ -702,20 +721,33 @@ let current = 0;
 
   // Показать экран результата: считаем верные ответы и переключаем вид.
   function showResult() {
-    const earned = results.reduce((sum, r) => sum + (r || 0), 0);
-    const total  = questions.reduce((sum, q) => sum + maxPointsOf(q), 0);
-    const percent = total > 0 ? (earned / total) * 100 : 0;
-    const grade = gradeForPercent(percent);
+    if (mode === "drill") {
+      // Тренировка: сколько заданий решено ПОЛНОСТЬЮ верно (баллы = максимуму задачи).
+      const count  = questions.length;
+      const solved = questions.reduce((n, q, i) =>
+        n + ((maxPointsOf(q) > 0 && results[i] === maxPointsOf(q)) ? 1 : 0), 0);
+      const pct = count > 0 ? Math.round(solved / count * 100) : 0;
 
-    resultText.textContent  = "Примерная оценка: " + grade;
-    resultScore.textContent = earned + " из " + total + " баллов (" + Math.round(percent) + "%)";
-
-    if (grade >= 5) {
-      resultPass.textContent = "Проходной балл достигнут 👍";
-      resultPass.className = "feedback ok";
+      resultText.textContent  = "Тренировка завершена";
+      resultScore.textContent = "Верно решено: " + solved + " из " + count + " (" + pct + "%)";
+      resultPass.textContent  = "";
+      resultPass.className     = "feedback";
     } else {
-      resultPass.textContent = "Ниже проходного — для сдачи нужна оценка 5 (от 25%).";
-      resultPass.className = "feedback bad";
+      // Полный тест: баллы и примерная оценка.
+      const earned  = results.reduce((sum, r) => sum + (r || 0), 0);
+      const total   = questions.reduce((sum, q) => sum + maxPointsOf(q), 0);
+      const percent = total > 0 ? (earned / total) * 100 : 0;
+      const grade   = gradeForPercent(percent);
+
+      resultText.textContent  = "Примерная оценка: " + grade;
+      resultScore.textContent = earned + " из " + total + " баллов (" + Math.round(percent) + "%)";
+      if (grade >= 5) {
+        resultPass.textContent = "Проходной балл достигнут 👍";
+        resultPass.className = "feedback ok";
+      } else {
+        resultPass.textContent = "Ниже проходного — для сдачи нужна оценка 5 (от 25%).";
+        resultPass.className = "feedback bad";
+      }
     }
 
     quizView.hidden = true;
@@ -727,6 +759,7 @@ let current = 0;
     menuView.hidden = false;
     quizView.hidden = true;
     resultView.hidden = true;
+    drillView.hidden = true;
   }
 
   // Запустить тренажёр с готовым набором вопросов (общая часть для всех режимов).
@@ -743,8 +776,39 @@ let current = 0;
   }
 
   // Конкретный тест (№1 или №2) и случайный набор — тонкие обёртки над startWith.
-  function startTest(i)  { startWith(buildTest(i)); }
-  function startRandom() { startWith(buildRandomTest()); }
+  function startTest(i)  { mode = "test";  startWith(buildTest(i)); }
+  function startRandom() { mode = "test";  startWith(buildRandomTest()); }
+  function startDrill(slotIndex) { mode = "drill"; startWith(buildDrill(slotIndex)); }
+
+  // Перемешать массив честно (Фишер–Йейтс). Трюк sort(()=>Math.random()-0.5) даёт перекос — не используем.
+  function shuffle(arr) {
+    const a = [...arr];
+    for (let i = a.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+  }
+
+  // Собрать тренировку: до 10 случайных вариантов одного слота (одна тема).
+  function buildDrill(slotIndex) {
+    const slot = slots[slotIndex];
+    return shuffle(slot.variants).slice(0, 10).map(q =>
+      ({ ...q, topic: q.topic || slot.topic, maxPoints: slot.maxPoints, position: slot.position }));
+  }
+  
+  function startDrill(slotIndex) { startWith(buildDrill(slotIndex)); }
+
+  // Показать экран выбора темы. Кнопки строим из slots — по одной на слот.
+  function showDrillMenu() {
+    topicList.innerHTML = slots.map((slot, i) =>
+      `<button class="start-btn" data-slot="${i}">${slot.position}. ${slot.topic}</button>`
+    ).join("");
+    menuView.hidden = true;
+    quizView.hidden = true;
+    resultView.hidden = true;
+    drillView.hidden = false;
+  }
 
   function show(message, type) {
     feedbackEl.textContent = message;
@@ -822,6 +886,12 @@ let current = 0;
     }
   });
   randomBtn.addEventListener("click", startRandom);
+  drillMenuBtn.addEventListener("click", showDrillMenu);
+  drillBackBtn.addEventListener("click", showMenu);
+  topicList.addEventListener("click", (e) => {
+    const btn = e.target.closest("[data-slot]");
+    if (btn) startDrill(Number(btn.dataset.slot));
+  });
 
   showMenu();
 </script>
