@@ -769,6 +769,7 @@
     baremState = {};
     current = 0;
     menuView.hidden = true;
+    drillView.hidden = true;
     resultView.hidden = true;
     quizView.hidden = false;
     updateScore();
@@ -845,6 +846,14 @@
     hideRules();
   });
   openRulesBtn.addEventListener("click", showRules);
+
+  drillMenuBtn.addEventListener("click", showDrillMenu);
+  drillBackBtn.addEventListener("click", showMenu);
+  topicList.addEventListener("click", (e) => {
+    const btn = e.target.closest("[data-slot]");
+    if (btn) startDrill(Number(btn.dataset.slot));
+  });
+
   document.getElementById("checkBtn").addEventListener("click", checkAnswer);
   answerArea.addEventListener("keydown", (e) => { if (e.key === "Enter") checkAnswer(); });
   // Разрешаем вводить только символы числа: цифры, минус, дробь, точку/запятую.
@@ -886,12 +895,7 @@
     }
   });
   randomBtn.addEventListener("click", startRandom);
-  drillMenuBtn.addEventListener("click", showDrillMenu);
-  drillBackBtn.addEventListener("click", showMenu);
-  topicList.addEventListener("click", (e) => {
-    const btn = e.target.closest("[data-slot]");
-    if (btn) startDrill(Number(btn.dataset.slot));
-  });
+  
 
   showMenu();
 </script>
