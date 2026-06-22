@@ -214,7 +214,7 @@
         text: "Пусть $a = \\frac{1}{4} - \\frac{1}{3}$ и $b = (-6)^2$. Впиши значения:",
         tip: "Дроби — к общему знаменателю. Чётная степень отрицательного числа положительна. $a\\cdot b$ — произведение найденных значений.",
         hint: "$\\frac{1}{4} - \\frac{1}{3} = \\frac{3 - 4}{12} = -\\frac{1}{12}$. $(-6)^2 = 36$. Потом перемножь.",
-        parts: [ { label: "$a =$", correct: -1/12 }, { label: "$b =$", correct: 36 }, { label: "$\\dfrac{a}{b} =$", correct: -1/12 } ] },
+        parts: [ { label: "$a =$", correct: -1/12 }, { label: "$b =$", correct: 36 }, { label: "$a \\cdot b =$", correct: -3 } ] },
     ] },
     { position: 2, topic: "Геометрия: параллелограмм", maxPoints: 2, variants: [
       { type: "multi",
@@ -798,7 +798,6 @@
       ({ ...q, topic: q.topic || slot.topic, maxPoints: slot.maxPoints, position: slot.position }));
   }
   
-  function startDrill(slotIndex) { startWith(buildDrill(slotIndex)); }
 
   // Показать экран выбора темы. Кнопки строим из slots — по одной на слот.
   function showDrillMenu() {
