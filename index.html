@@ -797,11 +797,9 @@
 
   // Показать экран выбора темы. Кнопки строим из slots — по одной на слот.
   function showDrillMenu() {
-    topicList.innerHTML = slots.map((slot, i) => {
-      // Собираем уникальные темы всех вариантов слота (где у варианта нет своей — берём тему слота).
-      const topics = [...new Set(slot.variants.map(v => v.topic || slot.topic))];
-      return `<button class="start-btn" data-slot="${i}">${slot.position}. ${topics.join(" / ")}</button>`;
-    }).join("");
+    topicList.innerHTML = slots.map((slot, i) =>
+      `<button class="start-btn" data-slot="${i}">№${slot.position}. ${slot.category} — ${slot.maxPoints} б.</button>`
+    ).join("");
     menuView.hidden = true;
     quizView.hidden = true;
     resultView.hidden = true;
