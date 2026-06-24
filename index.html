@@ -121,6 +121,7 @@
   .start-btn { width: 100%; }
   .start-btn + .start-btn { margin-top: 10px; }
   #drillBackBtn { margin-top: 16px; }
+  #testList .start-btn:first-child { margin-top: 10px; }
 </style>
 </head>
 <body>
@@ -132,8 +133,7 @@
       <p class="menu-sub">9 класс · 12 заданий · 50 баллов</p>
       <button id="drillMenuBtn" class="start-btn">Тренировка по теме</button>
       <button id="randomBtn" class="start-btn">Случайные задания</button>
-      <button id="test1Btn" class="start-btn">Тест №1</button>
-      <button id="test2Btn" class="start-btn">Тест №2</button>
+      <div id="testList"></div>
     </div>
 
     <!-- ВИД 0b: выбор темы для тренировки -->
@@ -201,6 +201,7 @@
   </main>
 
 <script>
+
   // ---- 1. ДАННЫЕ: слот = позиция в тесте (категория + тема). Внутри слота — пул вариантов.
   // variants[0] — Тест №1, variants[1] — Тест №2, variants[2] — Тест №3. У варианта своя topic.
   const slots = [
@@ -219,6 +220,11 @@
         tip: "$\\left(\\sqrt{n}\\right)^2 = n$. Посчитай $a$ и $b$ по отдельности, затем найди частное $\\frac{b}{a}$.",
         hint: "$\\left(\\sqrt{2}\\right)^2 = 2$. $b = 3 - 5 = -2$. $\\frac{b}{a} = \\frac{-2}{2}$.",
         parts: [ { label: "$a =$", correct: 2 }, { label: "$b =$", correct: -2 }, { label: "$\\dfrac{b}{a} =$", correct: -1 } ] },
+      { type: "multi", topic: "Арифметика и дроби",
+        text: "Пусть $a = \\frac{15}{4} \\cdot \\frac{8}{3}$ и $b = -9 + 4$. Впиши целые числа:",
+        tip: "Перемножь дроби (числители и знаменатели), сократи. Затем $b = -9 + 4$ и частное $\\frac{a}{b}$.",
+        hint: "$\\frac{15}{4} \\cdot \\frac{8}{3} = \\frac{120}{12} = 10$. $b = -9 + 4 = -5$. $\\frac{a}{b} = \\frac{10}{-5}$.",
+        parts: [ { label: "$a =$", correct: 10 }, { label: "$b =$", correct: -5 }, { label: "$\\dfrac{a}{b} =$", correct: -2 } ] },
     ] },
     { position: 2, topic: "Геометрия: параллелограмм", category: "Геометрия", maxPoints: 2, variants: [
       { type: "multi",
@@ -239,6 +245,11 @@
         tip: "Смежные углы в сумме дают $180^{\\circ}$. У параллельных прямых соответственные (и накрест лежащие) углы равны.",
         hint: "$x = 180^{\\circ} - 140^{\\circ} = 40$. Прямые параллельны, поэтому $(y - 45)$ равен углу $x$: $y - 45 = 40$.",
         parts: [ { label: "$x =$", correct: 40 }, { label: "$y =$", correct: 85 } ] },
+      { type: "multi", topic: "Геометрия: окружность",
+        text: "Точки $A$, $B$, $C$ лежат на окружности с центром $O$, $\\angle ACB = 21^{\\circ}$. Впиши:",
+        tip: "Вписанный угол равен половине дуги, на которую опирается. Центральный угол равен дуге, на которую опирается.",
+        hint: "Дуга $AB = 2 \\cdot 21^{\\circ} = 42^{\\circ}$ (вписанный угол). Центральный $\\angle AOB$ равен этой дуге.",
+        parts: [ { label: "m(дуги AB) =", correct: 42 }, { label: "∠AOB =", correct: 42 } ] },
     ] },
     { position: 3, topic: "Функции: парабола", category: "Функции", maxPoints: 2, variants: [
       { type: "range",
@@ -258,6 +269,11 @@
         tip: "Нуль функции — это $x$, при котором $f(x) = 0$. Реши уравнение $f(x) = 0$.",
         hint: "$-3x + 6 = 0 \\Rightarrow 3x = 6 \\Rightarrow x = 2$.",
         barem: [ { text: "Вписал верный нуль ($x = 2$)", points: 2, auto: true } ] },
+      { type: "single", topic: "Функции: число нулей", correct: 2,
+        text: "Дана функция $f(x) = x^2 - 2x - 4$. Впиши количество нулей функции $f$.",
+        tip: "Число нулей квадратичной функции определяется знаком дискриминанта: $D > 0$ — два, $D = 0$ — один, $D < 0$ — ноль.",
+        hint: "$D = (-2)^2 - 4 \\cdot 1 \\cdot (-4) = 20 > 0$ — значит два нуля.",
+        barem: [ { text: "Вписал верное количество нулей ($= 2$)", points: 2, auto: true } ] },
     ] },
     { position: 4, topic: "Текстовая задача: работа", category: "Текстовая задача", maxPoints: 5, variants: [
       { type: "single", correct: 2,
@@ -287,6 +303,15 @@
           { text: "Определил долю яблок 15% и завершил схему", points: 2 },
           { text: "Записал $x = \\frac{15 \\cdot 120}{100}$", points: 1 },
           { text: "Получил верный ответ $x = 18$", points: 1, auto: true } ] },
+      { type: "single", topic: "Текстовая задача: проценты", correct: 175,
+        text: "Агент покупает телевизор за 7500 лей. Дополнительно он платит 5% от цены за доставку и 200 лей за хранение. На сколько лей больше он платит за доставку, чем за хранение?",
+        tip: "Найди стоимость доставки (процент от цены), затем вычти из неё стоимость хранения.",
+        hint: "Доставка: $5\\%$ от 7500 $= \\frac{7500 \\cdot 5}{100} = 375$. Хранение — 200. Разница: $375 - 200$.",
+        barem: [
+          { text: "Составил схему: 100% — 7500, 5% — x", points: 2 },
+          { text: "Записал $x = \\frac{7500 \\cdot 5}{100}$", points: 1 },
+          { text: "Нашёл стоимость доставки ($= 375$)", points: 1 },
+          { text: "Получил верный ответ $375 - 200 = 175$", points: 1, auto: true } ] },
     ] },
     { position: 5, topic: "Степени: вычисление", category: "Вычисления", maxPoints: 5, variants: [
       { type: "single", correct: 4,
@@ -315,6 +340,14 @@
           { text: "$49^5 = 7^{10}$", points: 2 },
           { text: "Свёл к $7^{-1}$ (сложил показатели)", points: 2 },
           { text: "$7^{-1} : \\frac{1}{7} = 1$", points: 1, auto: true } ] },
+      { type: "single", topic: "Вычисление выражения", correct: -6,
+        text: "Покажи, что значение выражения $\\sqrt{3}\\left(4 - \\sqrt{12}\\right) - \\sqrt{48}$ — целое число. Впиши это число.",
+        tip: "Раскрой скобку, упрости корни: $\\sqrt{a} \\cdot \\sqrt{b} = \\sqrt{ab}$ и выноси множители ($\\sqrt{48} = \\sqrt{16 \\cdot 3}$).",
+        hint: "$\\sqrt{3} \\cdot \\sqrt{12} = \\sqrt{36} = 6$, $\\sqrt{48} = 4\\sqrt{3}$. Тогда $4\\sqrt{3} - 6 - 4\\sqrt{3}$.",
+        barem: [
+          { text: "$\\sqrt{3} \\cdot \\sqrt{12} = 6$", points: 2 },
+          { text: "$\\sqrt{48} = 4\\sqrt{3}$", points: 2 },
+          { text: "Выполнил действия, получил $-6$", points: 1, auto: true } ] },
     ] },
     { position: 6, topic: "Уравнение: обратное число", category: "Уравнение", maxPoints: 4, variants: [
       { type: "single", correct: 4/3,
@@ -340,6 +373,13 @@
         barem: [
           { text: "$\\Delta = 121$, корни $-\\frac{3}{2}$ и $\\frac{1}{3}$", points: 3 },
           { text: "Получил верный ответ $-1$", points: 1, auto: true } ] },
+      { type: "single", topic: "Квадратное уравнение", correct: 1,
+        text: "Найди квадрат наименьшего действительного решения уравнения $2x^2 - x - 3 = 0$.",
+        tip: "Реши квадратное уравнение через дискриминант. Возьми меньший корень и возведи его в квадрат.",
+        hint: "$\\Delta = 25$, корни $\\frac{3}{2}$ и $-1$. Наименьший — $-1$, его квадрат — $(-1)^2 = 1$.",
+        barem: [
+          { text: "$\\Delta = 25$, корни $\\frac{3}{2}$ и $-1$", points: 3 },
+          { text: "Нашёл квадрат наименьшего решения ($= 1$)", points: 1, auto: true } ] },
     ] },
     { position: 7, topic: "Геометрия: окружность", category: "Геометрия", maxPoints: 5, variants: [
       { type: "single", correct: 24,
@@ -371,6 +411,17 @@
           { text: "Нашёл сторону против угла $30^{\\circ}$ ($= 3$)", points: 2 },
           { text: "Нашёл другую сторону ($= 3\\sqrt{3}$)", points: 2 },
           { text: "Вычислил площадь ($= 9\\sqrt{3}$ см²)", points: 1 } ] },
+      { type: "open", topic: "Геометрия: квадрат",
+        text: "Площадь квадрата $ABCD$ равна 100 см². Точка $M$ — середина стороны $BC$. Найди длину отрезка $AM$.",
+        tip: "Сторона квадрата — корень из площади. $M$ — середина стороны, поэтому $BM$ — половина стороны. Треугольник $ABM$ прямоугольный (теорема Пифагора).",
+        solution:
+          "Сторона квадрата: $\\sqrt{100} = 10$ см.\n" +
+          "$M$ — середина $BC$, значит $BM = 5$ см.\n" +
+          "Треугольник $ABM$ прямоугольный: $AM = \\sqrt{10^2 + 5^2} = \\sqrt{125} = 5\\sqrt{5}$ см.",
+        barem: [
+          { text: "Нашёл длину стороны квадрата ($= 10$)", points: 2 },
+          { text: "Нашёл $BM = 5$", points: 1 },
+          { text: "Получил $AM = 5\\sqrt{5}$ см", points: 2 } ] },
     ] },
     { position: 8, topic: "Текстовая задача: система", category: "Текстовая задача", maxPoints: 5, variants: [
       { type: "multi",
@@ -400,6 +451,15 @@
           { text: "Составил систему из двух уравнений", points: 2 },
           { text: "Решил систему (нашёл оба плана)", points: 2 },
           { text: "Записал верный ответ (400 и 600)", points: 1, auto: true } ] },
+      { type: "multi", topic: "Текстовая задача: система",
+        text: "В 3 яблоках и 2 лимонах — 130 мг витамина C. В одном лимоне на 40 мг больше, чем в одном яблоке. Сколько мг витамина C в одном яблоке и в одном лимоне?",
+        tip: "Обозначь содержание в яблоке и в лимоне буквами. Составь систему: одно уравнение про 3 яблока и 2 лимона, второе — про разницу в 40 мг.",
+        hint: "Пусть в яблоке $a$, в лимоне $l$. Тогда $3a + 2l = 130$ и $l = a + 40$.",
+        parts: [ { label: "Яблоко =", correct: 10 }, { label: "Лимон =", correct: 50 } ],
+        barem: [
+          { text: "Составил систему из двух уравнений", points: 2 },
+          { text: "Решил систему (нашёл оба значения)", points: 2 },
+          { text: "Записал верный ответ (10 и 50)", points: 1, auto: true } ] },
     ] },
     { position: 9, topic: "Функция: область определения", category: "Функции", maxPoints: 5, variants: [
       { type: "open",
@@ -436,6 +496,16 @@
           { text: "Записал условия $-4x + 15 \\ge 0$ и $x - 3 \\ne 0$", points: 2 },
           { text: "Решил неравенство $-4x + 15 \\ge 0$", points: 2 },
           { text: "Записал ответ $\\left(-\\infty;\\ \\frac{15}{4}\\right] \\setminus \\{3\\}$", points: 1 } ] },
+      { type: "open", topic: "Функция: неравенство",
+        text: "$f(x) = -3x + 6$. Найди значения $x \\le 4$, при которых $f(x) - 2 < x$.",
+        tip: "Подставь $f(x)$ в неравенство $f(x) - 2 < x$, реши его, затем пересеки с условием $x \\le 4$.",
+        solution:
+          "$f(x) - 2 < x$: $-3x + 6 - 2 < x \\Rightarrow -3x + 4 < x \\Rightarrow 4 < 4x \\Rightarrow x > 1$.\n" +
+          "С учётом $x \\le 4$: $x \\in (1;\\ 4]$.",
+        barem: [
+          { text: "Получил неравенства $-3x + 6 - 2 < x$ и $x \\le 4$", points: 2 },
+          { text: "Решил неравенство $-3x + 4 < x$", points: 2 },
+          { text: "Записал верный ответ $x \\in (1;\\ 4]$", points: 1 } ] },
     ] },
     { position: 10, topic: "Стереометрия: призма", category: "Стереометрия", maxPoints: 4, variants: [
       { type: "single", correct: 2,
@@ -464,6 +534,19 @@
           { text: "Нашёл объём пирамиды ($= 12$ м³)", points: 2 },
           { text: "Перевёл объём в литры ($= 12000$ л)", points: 1 },
           { text: "Нашёл время ($= 30$ мин)", points: 1, auto: true } ] },
+      { type: "open", topic: "Стереометрия: объём",
+        text: "Шесть пачек масла (прямоугольный параллелепипед $6 \\times 10 \\times 2$ см) растапливают и выливают в цилиндр с радиусом основания 5 см и высотой 10 см. Поместится ли масло?",
+        tip: "Объём параллелепипеда: $V = abc$. Объём цилиндра: $V = \\pi R^2 H$. Сравни суммарный объём масла с объёмом цилиндра.",
+        solution:
+          "Одна пачка: $6 \\cdot 10 \\cdot 2 = 120$ см³.\n" +
+          "Шесть пачек: $6 \\cdot 120 = 720$ см³.\n" +
+          "Цилиндр: $\\pi \\cdot 5^2 \\cdot 10 = 250\\pi \\approx 785$ см³.\n" +
+          "$720 < 785$ — масло поместится.",
+        barem: [
+          { text: "Нашёл объём одной пачки ($= 120$ см³)", points: 1 },
+          { text: "Нашёл объём 6 пачек ($= 720$ см³)", points: 1 },
+          { text: "Нашёл объём цилиндра ($= 250\\pi$ см³)", points: 1 },
+          { text: "Сравнил объёмы и сделал вывод: поместится", points: 1 } ] },
     ] },
     { position: 11, topic: "Алгебраические дроби", category: "Алгебра", maxPoints: 6, variants: [
       { type: "open",
@@ -507,6 +590,21 @@
           { text: "$2X^4 - 2X^2 = 2X^2(X-1)(X+1)$", points: 2 },
           { text: "Получил $E(X) = 4X^2$", points: 1 },
           { text: "Записал $E(X) = (2X)^2$", points: 1 } ] },
+      { type: "open", topic: "Алгебраические дроби",
+        text: "Дано $E(x) = (x + 3)^2 - 3(2x + 1) - 7$. Найди действительные $x$, при которых $\\dfrac{E(x)}{x + 1} = 1$.",
+        tip: "Раскрой и упрости $E(x)$ — получится разность квадратов. Учти ОДЗ ($x + 1 \\ne 0$), сократи дробь и реши уравнение.",
+        solution:
+          "$(x+3)^2 = x^2 + 6x + 9$.\n" +
+          "$E(x) = x^2 + 6x + 9 - 6x - 3 - 7 = x^2 - 1 = (x-1)(x+1)$.\n" +
+          "ОДЗ: $x \\ne -1$. Тогда $\\frac{(x-1)(x+1)}{x+1} = x - 1 = 1$.\n" +
+          "$x - 1 = 1 \\Rightarrow x = 2$ (условие $x \\ne -1$ выполнено).",
+        barem: [
+          { text: "$(x+3)^2 = x^2 + 6x + 9$", points: 1 },
+          { text: "Получил $E(x) = x^2 - 1$", points: 1 },
+          { text: "$x^2 - 1 = (x-1)(x+1)$", points: 1 },
+          { text: "Записал условие $x \\ne -1$", points: 1 },
+          { text: "Получил уравнение $x - 1 = 1$", points: 1 },
+          { text: "Решил и проверил ОДЗ: $x = 2$", points: 1 } ] },
     ] },
     { position: 12, topic: "Функция: линейная модель", category: "Функции", maxPoints: 4, variants: [
       { type: "single", correct: 9,
@@ -540,6 +638,17 @@
           { text: "Получил уравнение $4 - 4m = 0$", points: 2 },
           { text: "Нашёл $m = 1$", points: 1 },
           { text: "Записал ответ $V(-1;\\ 0)$", points: 1 } ] },
+      { type: "open", topic: "Функция: монотонность",
+        text: "$f(x) = (m - 2)x + 3$, и точка $A(1;\\ 2m)$ лежит на графике функции $f$. Определи монотонность функции $f$.",
+        tip: "Точка на графике: $f(1) = 2m$ — отсюда найди $m$. Линейная функция возрастает при положительном коэффициенте и убывает при отрицательном.",
+        solution:
+          "$A$ на графике ⟹ $f(1) = 2m$.\n" +
+          "$f(1) = (m - 2) + 3 = m + 1$, значит $m + 1 = 2m \\Rightarrow m = 1$.\n" +
+          "Тогда $f(x) = (1 - 2)x + 3 = -x + 3$; коэффициент $-1 < 0$ — функция убывает.",
+        barem: [
+          { text: "Получил уравнение $(m - 2) + 3 = 2m$", points: 2 },
+          { text: "Нашёл $m = 1$", points: 1 },
+          { text: "Вывод: функция убывает", points: 1 } ] },
     ] },
   ];
 
@@ -603,6 +712,7 @@
   const topicList    = document.getElementById("topicList");
   const drillMenuBtn = document.getElementById("drillMenuBtn");
   const drillBackBtn = document.getElementById("drillBackBtn");
+  const testList = document.getElementById("testList");
 
 
 
@@ -908,6 +1018,14 @@
     drillView.hidden = false;
   }
 
+  // Кнопки тестов строим из данных: сколько максимум вариантов в слотах — столько тестов.
+  function renderTestButtons() {
+    const testCount = Math.max(...slots.map(s => s.variants.length));
+    testList.innerHTML = Array.from({ length: testCount }, (_, i) =>
+      `<button class="start-btn" data-test="${i}">Тест №${i + 1}</button>`
+    ).join("");
+  }
+
   function show(message, type) {
     feedbackEl.textContent = message;
     feedbackEl.className = "feedback " + type;
@@ -974,8 +1092,10 @@
   nextBtn.addEventListener("click", goNext);
   prevBtn.addEventListener("click", goPrev);
   finishBtn.addEventListener("click", showResult);
-  test1Btn.addEventListener("click", () => startTest(0));
-  test2Btn.addEventListener("click", () => startTest(1));
+  testList.addEventListener("click", (e) => {
+    const btn = e.target.closest("[data-test]");
+    if (btn) startTest(Number(btn.dataset.test));
+  });
   restartBtn.addEventListener("click", showMenu);   // с результата — назад в меню
   baremEl.addEventListener("change", (e) => {
     if (e.target.classList.contains("barem-cb")) applyBarem(questions[current]);
@@ -993,7 +1113,8 @@
   });
   randomBtn.addEventListener("click", startRandom);
   
-
+  
+  renderTestButtons();
   showMenu();
 </script>
 </body>
