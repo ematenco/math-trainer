@@ -38,7 +38,6 @@
   }
   .eyebrow { font-size: 13px; color: var(--muted); letter-spacing: .04em; text-transform: uppercase; margin: 0 0 6px; }
   .question { font-size: 22px; font-weight: 650; margin: 0 0 20px; line-height: 1.35; }
-  .row { display: flex; gap: 10px; }
   input {
     flex: 1; font-size: 18px; padding: 12px 14px;
     border: 1.5px solid var(--line); border-radius: 12px; outline: none; color: var(--ink);
@@ -78,11 +77,6 @@
     color: var(--ink);
     line-height: 1.45;
   }
-  .badge-todo { display: inline-block; font-size: 12px; font-weight: 600;
-    color: #9a6b00; background: #fff1cc; padding: 3px 8px; border-radius: 999px; }
-  .todo-note { margin: 8px 0 0; padding: 12px 14px; background: #fff7e6;
-    border-left: 3px solid #e6a700; border-radius: 10px; font-size: 14px;
-    color: var(--ink); line-height: 1.45; }
   .q-image { display: block; max-width: 100%; margin: 0 0 16px; border-radius: 10px; }
   .q-image[hidden] { display: none; }
   .reveal-btn { width: 100%; margin-bottom: 12px; }
@@ -1313,7 +1307,7 @@
     });
   }
 
-  // Случайный тест: по одному случайному варианту на слот (понадобится на следующем шаге).
+  // Случайный тест: по одному случайному варианту на слот.
   function buildRandomTest() {
     return slots.map(slot => {
       const i = Math.floor(Math.random() * slot.variants.length);
@@ -1357,8 +1351,6 @@
   const closeRulesBtn = document.getElementById("closeRulesBtn");
   const openRulesBtn  = document.getElementById("openRulesBtn");
   const menuView = document.getElementById("menuView");
-  const test1Btn = document.getElementById("test1Btn");
-  const test2Btn = document.getElementById("test2Btn");
   const randomBtn = document.getElementById("randomBtn");
   const drillView    = document.getElementById("drillView");
   const topicList    = document.getElementById("topicList");
@@ -1394,14 +1386,7 @@
       qImageEl.removeAttribute("src");
     }
 
-    if (q.type === "todo") {
-      answerArea.innerHTML =
-        `<span class="badge-todo">формат в разработке</span>
-         <p class="todo-note">${q.note || "Этот тип задания добавим позже."}</p>`;
-      checkBtn.hidden = true;
-      inputEls = [];
-
-    } else if (q.type === "open") {
+    if (q.type === "open") {
       // Открытый вопрос: авто-ответа нет. Есть эталонное решение и самопроверка по барему.
       answerArea.innerHTML = q.solution
         ? `<button class="reveal-btn" id="revealBtn">Показать решение</button>
@@ -1436,7 +1421,7 @@
   // ---- 2. ЛОГИКА: проверка ответа текущего вопроса
   function checkAnswer() {
     const q = questions[current];
-    if (q.type === "todo" || q.type === "open") return;
+    if (q.type === "open") return;
 
     if (q.type === "single" || q.type === "range") {
       const raw = inputEls[0].value.trim();
@@ -1477,7 +1462,7 @@
   // Сколько баллов "стоит" вопрос: одиночный = 1, многорамочный = число рамок.
   function maxPointsOf(q) {
     if (q.barem) return q.barem.reduce((s, st) => s + st.points, 0);
-    if (q.type === "todo" || q.type === "open") return 0;
+    if (q.type === "open") return 0;
     if (q.type === "multi") return q.parts.length;
     return 1;
   }
@@ -1636,7 +1621,7 @@
     render();
   }
 
-  // Конкретный тест (№1 или №2) и случайный набор — тонкие обёртки над startWith.
+  // Запуск конкретного теста, случайного набора и тренировки — тонкие обёртки над startWith.
   function startTest(i)  { mode = "test";  startWith(buildTest(i)); }
   function startRandom() { mode = "test";  startWith(buildRandomTest()); }
   function startDrill(slotIndex) { mode = "drill"; startWith(buildDrill(slotIndex)); }
